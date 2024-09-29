@@ -37,7 +37,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-08-28 19:10:41.963149",
+ "modified": "2024-09-25 14:33:25.377465",
  "modified_by": "Administrator",
  "module": "HKM Integration",
  "name": "AU Bank Account",
@@ -56,7 +56,9 @@
    "write": 1
   }
  ],
+ "show_title_field_in_link": 1,
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "title_field": "bank_account"
 }

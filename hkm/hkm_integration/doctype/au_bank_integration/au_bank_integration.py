@@ -7,6 +7,8 @@ import base64
 from hkm.hkm_integration.doctype.au_bank_integration.encryption import encrypt
 from frappe.model.document import Document
 
+OAUTH_URL = "https://api.aubank.in/oauth/accesstoken?grant_type=client_credentials"
+
 
 class AUBankIntegration(Document):
     # begin: auto-generated types
@@ -25,7 +27,6 @@ class AUBankIntegration(Document):
     pass
 
     def generate_token(self):
-        url = "https://api.aubankuat.in/oauth/accesstoken?grant_type=client_credentials"
         credentials = self.client_key + ":" + self.get_password("client_secret")
         encoded_credentials = base64.b64encode(credentials.encode("utf-8")).decode(
             "utf-8"
@@ -34,7 +35,8 @@ class AUBankIntegration(Document):
         headers = {
             "Authorization": f"Basic {encoded_credentials}",
         }
-        response = requests.request("GET", url, headers=headers)
+        response = requests.request("GET", OAUTH_URL, headers=headers)
+        print(response.text)
         if response.status_code == 200:
             self.access_token = response.json()["access_token"]
             self.save()

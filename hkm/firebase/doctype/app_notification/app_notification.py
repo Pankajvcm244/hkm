@@ -59,7 +59,7 @@ class AppNotification(Document):
                 ),
             )
             fa_doc = frappe.get_doc("Firebase Admin App", self.app)
-            response = messaging.send_multicast(message, app=fa_doc.instance)
+            response = messaging.send_each_for_multicast(message, app=fa_doc.instance)
             return response
 
 

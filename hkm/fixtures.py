@@ -4,8 +4,10 @@
 ### This file has to be dynamically changed everytime, we need to send some customisations to other sites.
 
 custom_fixtures = [
-    "Wiki Space",
-    "Wiki Page",
+    # "DJ Receipt Format"
+    # {"dt": "Custom Field", "filters": [["name", "=", "Purchase Invoice-department"]]}
+    # "Wiki Space",
+    # "Wiki Page",
     # "S3 Backup Settings",
     # "DFP External Storage",
     # # "Sadhana Parameter",

@@ -209,8 +209,6 @@ def get_invoices(filters):
                 invoices[invoice_no]["taxes"][gtype]["hsns"].append(gst_hsn_code)
             invoices[invoice_no]["taxes"][gtype]["taxable"] += taxable
             invoices[invoice_no]["taxes"][gtype]["tax"] += item_taxes[gtype]
-            # frappe.errprint(invoices[invoice_no]["taxes"][gtype]["tax"])
-    # frappe.errprint(invoices)
     return invoices
 
 

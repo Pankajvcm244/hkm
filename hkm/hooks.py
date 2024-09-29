@@ -170,7 +170,8 @@ doc_events = {
         "validate": "hkm.erpnext___custom.extend.purchase_receipt.validate",
     },
     "Payment Entry": {
-        "on_submit": "hkm.erpnext___custom.extend.payment_entry.on_submit"
+        "on_submit": "hkm.erpnext___custom.extend.payment_entry.on_submit",
+        "before_save": "hkm.erpnext___custom.extend.payment_entry.before_save",
     },
     "POS Closing Entry": {
         "validate": "hkm.erpnext___custom.extend.pos_closing_entry.validate"

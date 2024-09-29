@@ -1,4 +1,7 @@
+import re
+from erpnext.accounts.party import get_default_contact
 import frappe
+from frappe.contacts.doctype.address.address import get_default_address
 
 
 def on_submit(self, method=None):
@@ -62,3 +65,33 @@ def get_payment_entry_from_statement(statement):
     payment_entry = frappe.new_doc("Payment Entry")
     payment_entry.update(payment_entry_dict)
     return payment_entry
+
+
+def before_save(self, method=None):
+    frappe.errprint("Chalu")
+    meta = frappe.get_meta("Payment Entry")
+    if not meta.has_field("custom_mobile_number"):
+        return
+    if self.get("custom_mobile_number"):
+        return
+    frappe.errprint("Chalu")
+    mobile_number = None
+    address = get_default_address(doctype=self.party_type, name=self.party)
+    frappe.errprint(address)
+    if address:
+        mobile_number = frappe.db.get_value("Address", address, "phone")
+        frappe.errprint(mobile_number)
+    if not mobile_number:
+        contact_id = get_default_contact(doctype=self.party_type, name=self.party)
+        if contact_id:
+            contact_doc = frappe.get_doc("Contact", contact_id)
+            if len(contact_doc.phone_nos) > 0:
+                mobile_number = contact_doc.phone_nos[0].phone
+
+    match = re.search(r"(\d{10})\D*$", mobile_number)
+
+    # If a match is found, prepend '91'
+    if match:
+        mobile_number = "91" + match.group(1)
+    self.custom_mobile_number = mobile_number
+    return

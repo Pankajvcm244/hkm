@@ -35,7 +35,7 @@
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-08-28 18:16:39.592689",
+ "modified": "2024-09-25 15:15:03.260616",
  "modified_by": "Administrator",
  "module": "HKM Integration",
  "name": "AU Bank Integration",
@@ -54,5 +54,6 @@
  ],
  "sort_field": "modified",
  "sort_order": "DESC",
- "states": []
+ "states": [],
+ "track_changes": 1
 }
