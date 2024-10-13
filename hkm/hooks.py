@@ -138,7 +138,7 @@ override_doctype_class = {
 
 doc_events = {
     "*": {
-        "before_insert": "hkm.erpnext___custom.doctype.freeze_transaction_settings.freeze_transaction_settings.validate_transaction_against_frozen_date",
+        "before_save": "hkm.erpnext___custom.doctype.freeze_transaction_settings.freeze_transaction_settings.validate_transaction_against_frozen_date",
         "before_cancel": "hkm.erpnext___custom.doctype.freeze_transaction_settings.freeze_transaction_settings.validate_transaction_against_frozen_date",
         "on_update": "hkm.hooks_extend.before_save",
     },
