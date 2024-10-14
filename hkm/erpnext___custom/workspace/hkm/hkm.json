@@ -55,6 +55,7 @@
    "link_to": "Balance Sheet",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "GL Entry",
    "type": "Link"
   },
   {
@@ -65,6 +66,7 @@
    "link_to": "Profit and Loss Statement",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "GL Entry",
    "type": "Link"
   },
   {
@@ -75,6 +77,7 @@
    "link_to": "Trial Balance",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "GL Entry",
    "type": "Link"
   },
   {
@@ -85,6 +88,7 @@
    "link_to": "GSTR Taxwise",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Sales Invoice",
    "type": "Link"
   },
   {
@@ -103,6 +107,7 @@
    "link_to": "Purchase Order Track",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Purchase Order",
    "type": "Link"
   },
   {
@@ -113,6 +118,7 @@
    "link_to": "Purchase Analytics",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Purchase Order",
    "type": "Link"
   },
   {
@@ -123,10 +129,11 @@
    "link_to": "Purchase Department Analysis",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Purchase Order",
    "type": "Link"
   }
  ],
- "modified": "2024-08-08 13:51:50.025435",
+ "modified": "2024-10-12 14:12:27.339017",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM",

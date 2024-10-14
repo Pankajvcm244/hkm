@@ -76,6 +76,7 @@
    "link_to": "Ashram Library Stock",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Ashram Library Book",
    "type": "Link"
   },
   {
@@ -86,10 +87,11 @@
    "link_to": "Ashram Library User Status",
    "link_type": "Report",
    "onboard": 0,
+   "report_ref_doctype": "Ashram Store User",
    "type": "Link"
   }
  ],
- "modified": "2024-08-08 13:51:50.353626",
+ "modified": "2024-10-12 14:12:27.687598",
  "modified_by": "Administrator",
  "module": "Ashram Issue Counter",
  "name": "Ashram",

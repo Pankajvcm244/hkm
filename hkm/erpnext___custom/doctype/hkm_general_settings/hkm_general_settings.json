@@ -11,6 +11,11 @@
   "po_whatsapp_template",
   "voucher_flow_section",
   "pp_group",
+  "item_code_section",
+  "item_code_default_series",
+  "accounts_section",
+  "one_time_restrictions_enabled",
+  "one_time_vendor_limit",
   "other_tab"
  ],
  "fields": [
@@ -51,12 +56,42 @@
    "fieldtype": "Link",
    "label": "Paid & Purchased Supplier Group",
    "options": "Supplier Group"
+  },
+  {
+   "fieldname": "item_code_section",
+   "fieldtype": "Section Break",
+   "label": "Item Code"
+  },
+  {
+   "description": "This series will be fetched in case the Item Group doesn't have a Series set in. This will be used in New Item Creation.",
+   "fieldname": "item_code_default_series",
+   "fieldtype": "Data",
+   "label": "Default Series"
+  },
+  {
+   "fieldname": "accounts_section",
+   "fieldtype": "Section Break",
+   "label": "One Time Vendor Rules"
+  },
+  {
+   "default": "10000",
+   "description": "This restriction will be put on Purchase Order Amount to disallow big amounts to be tagged in One Time Vendor.",
+   "fieldname": "one_time_vendor_limit",
+   "fieldtype": "Currency",
+   "label": "One Time Vendor Limit",
+   "mandatory_depends_on": "eval:doc.one_time_restrictions_enabled"
+  },
+  {
+   "default": "0",
+   "fieldname": "one_time_restrictions_enabled",
+   "fieldtype": "Check",
+   "label": "Enabled"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-08-17 13:43:40.954594",
+ "modified": "2024-10-04 14:30:56.860576",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM General Settings",

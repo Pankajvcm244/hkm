@@ -7,6 +7,7 @@
  "editable_grid": 1,
  "engine": "InnoDB",
  "field_order": [
+  "status",
   "gstin",
   "supplier_name",
   "mobile_number",
@@ -100,7 +101,7 @@
    "mandatory_depends_on": "'ERP Coordinator' in frappe.get_roles(frappe.session.user)"
   },
   {
-   "description": "<p style=\"color: red;\">GST ID is compulsory for TSF</p>\n<p style=\"color: green; font-weight: bold;\">With GST No., there is no requirement of other fields like Supplier Name &amp; Address.</p>",
+   "description": "<p style=\"color: green; font-weight: bold;\">With GST No., there is no requirement of other fields like Supplier Name &amp; Address.</p>",
    "fieldname": "gstin",
    "fieldtype": "Data",
    "label": "Party GST"
@@ -171,11 +172,21 @@
    "fieldtype": "Link",
    "label": "Bank",
    "options": "Bank"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Status",
+   "no_copy": 1,
+   "options": "Pending\nCreated\nRejected",
+   "read_only": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-07-24 10:47:38.463525",
+ "modified": "2024-10-10 13:16:55.326126",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "Supplier Creation Request",

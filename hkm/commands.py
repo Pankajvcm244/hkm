@@ -5,13 +5,14 @@ import frappe
 
 
 relevant_sites = [
-    # "hkmjerp.in",
-    # "erp.hkmkota.org",
-    # "erp.hkmjodhpur.org",
-    # "erp.hkmudaipur.org",
-    # "vcmerp.in",
-    # "lko.vcmerp.in",
-    # "erp.hkmmumbai.com",
+    "hkmjerp.in",
+    "erp.hkmkota.org",
+    "erp.hkmjodhpur.org",
+    "erp.hkmudaipur.org",
+    "vcmerp.in",
+    "lko.vcmerp.in",
+    "pb.vcmerp.in",
+    "erp.hkmmumbai.com",
     "erp.harekrishnamandir.org",
 ]
 

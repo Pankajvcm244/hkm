@@ -6,6 +6,7 @@ import datetime
 
 from attr import fields
 from pymysql import Date
+from hkm.erpnext___custom.overrides.buying_validations import validate_one_time_vendor
 from erpnext.accounts.doctype.purchase_invoice.purchase_invoice import PurchaseInvoice
 import frappe
 from frappe import _, throw
@@ -28,6 +29,7 @@ class HKMPurchaseInvoice(PurchaseInvoice):
         super().validate()
         self.asset_pr_required()
         self.validate_expense_account()
+        validate_one_time_vendor(self)
         return
 
     def validate_expense_account(self):

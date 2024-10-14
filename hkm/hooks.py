@@ -149,12 +149,10 @@ doc_events = {
     },
     "Supplier": {
         "before_insert": "hkm.erpnext___custom.extend.supplier.creation_from_gstin",
-        "on_update": "hkm.erpnext___custom.extend.supplier.update_data_from_supplier_creation_request",
     },
     "Item": {
         "before_insert": "hkm.erpnext___custom.extend.item.item_taxes_and_income_account_set",  # Before the document first time inserted, this will not run always whenever some changes are made to the document
         "before_insert": "hkm.erpnext___custom.extend.item.update_item_code_in_barcodes",
-        "after_insert": "hkm.erpnext___custom.extend.item.item_creation_update",
     },
     "Purchase Invoice": {
         "before_submit": [
@@ -184,7 +182,12 @@ scheduler_events = {
         "hkm.erpnext___custom.doctype.hkm_redirect.hkm_redirect.delete_temporary_short_links",
         "hkm.firebase.doctype.app_notification.app_notification.delete_old_app_notifications",
     ],
-    "cron": {"15 20 * * *": ["hkm.divine_dishes.tasks.every_day_evening"]},
+    "cron": {
+        "15 20 * * *": ["hkm.divine_dishes.tasks.every_day_evening"],
+        "45 * * * *": [
+            "hkm.hkm_integration.doctype.au_bank_account.au_bank_account.auto_update_bank_txs"
+        ],
+    },
 }
 
 # scheduler_events = {

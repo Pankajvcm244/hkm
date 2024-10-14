@@ -1,9 +1,11 @@
 # Copyright (c) 2024, Narahari Dasa and contributors
 # For license information, please see license.txt
 
+from datetime import datetime
 import json
 import requests
 from frappe.utils import random_string
+from frappe.utils.data import strip
 from hkm.hkm_integration.doctype.au_bank_integration.encryption import encrypt, decrypt
 import frappe
 from frappe.model.document import Document
@@ -23,6 +25,7 @@ class AUBankAccount(Document):
         from frappe.types import DF
 
         account_number: DF.Data | None
+        active: DF.Check
         bank_account: DF.Link
         corporate_code: DF.Data | None
         corporate_product_name: DF.Data | None
@@ -40,20 +43,21 @@ class AUBankAccount(Document):
             "ReferenceNumber": "128637162731723742",
             "TransactionBranch": "2011",
         }
+        print(payload)
         encryption_key = settings.get_password("encryption_key")
         plain_text = json.dumps(payload, separators=(",", ":"))
-        print(payload)
-        print(encryption_key)
-        # print(json.dumps(payload))
         encdata = encrypt(encryption_key, plain_text)
-        # encdata = aes_encrypt_data(json.dumps(payload), encryption_key)
         data = {"encvalue": encdata}
-        print(data)
         headers = {"Authorization": "Bearer " + settings.get_password("access_token")}
-        # headers = {"Authorization": "Bearer upCUpnJz9ksqyBLMw2hkGw3Mq2KP"}
-        response = requests.request("POST", MINI_STAT_URL, headers=headers, data=data)
-        print(response.text)
-        print(response.status_code)
+        response = requests.request("POST", MINI_STAT_URL, headers=headers, json=data)
+        if response.status_code == 200:
+            mesg = decrypt(encryption_key, response.text)
+            print(mesg)
+            return mesg
+        else:
+            frappe.msgprint(
+                response.text, title="Error", indicator="red", raise_exception=1
+            )
 
     def payout(self, payment_request):
         settings = frappe.get_doc("AU Bank Integration")
@@ -63,18 +67,18 @@ class AUBankAccount(Document):
                 {
                     "paymentMethodName": "NEFT",
                     "remitterAccountNo": self.account_number,
-                    "amount": "1.0",  # p.amount,
+                    "amount": p.amount,
                     "ifscCode": p.ifsc_code,
                     "payableCurrency": "INR",
                     "beneAccNo": p.bank_account_number,
                     "beneName": p.bank_account_name,
-                    "beneCode": "11111",
+                    "beneCode": "",
                     "valueDate": "",
-                    "remarks": "HKM-Production",
+                    "remarks": "HKM Production",
                     "transactionRefNo": p.name,
-                    "paymentInstruction": f"SUPPLIER PAYMENT {p.bank_account_name}",
-                    "email": "test@gmail.com",
-                    "phoneNo": "999999999",
+                    "paymentInstruction": f"SUPPLIER PAYMENT",
+                    "email": "",
+                    "phoneNo": "",
                 }
             )
         payload = {
@@ -85,35 +89,6 @@ class AUBankAccount(Document):
                 "transactionDetails": tx_details,
             }
         }
-        ##Dummy
-
-        payload = {
-            "TransactionCreationRequest": {
-                "uniqueRequestId": "Test0112233M",
-                "corporateCode": "21240931",
-                "corporateProductCode": "ALLPAYMENTWIMPSBULK",
-                "transactionDetails": [
-                    {
-                        "paymentMethodName": "NEFT",
-                        "remitterAccountNo": "1781220613087427",
-                        "amount": "1",
-                        "ifscCode": "",
-                        "payableCurrency": "INR",
-                        "beneAccNo": "2302201151638241",
-                        "beneCode": "11111",
-                        "valueDate": "",
-                        "beneName": "APITEST01",
-                        "remarks": "H2H API",
-                        "transactionRefNo": "APITEST01I",
-                        "paymentInstruction": "Payment Instruction 98",
-                        "email": "test@gmail.com",
-                        "phoneNo": "999999999",
-                    }
-                ],
-            }
-        }
-        ##Dummy
-
         encryption_key = settings.get_password("encryption_key")
         encrypted_data = encrypt(
             encryption_key, json.dumps(payload, separators=(",", ":"))
@@ -124,7 +99,6 @@ class AUBankAccount(Document):
         if response.status_code == 200:
             mesg = decrypt(encryption_key, response.text)
             mesg = json.loads(mesg)
-            frappe.errprint(mesg)
             if "responseCode" in mesg and mesg["responseCode"] != "00":
                 frappe.msgprint(
                     mesg["responseMessage"],
@@ -140,8 +114,6 @@ class AUBankAccount(Document):
                     "batchNo"
                 ]
                 payment_request.save()
-                frappe.errprint(payload)
-                frappe.errprint(mesg)
         else:
             frappe.throw(
                 f"Failed with Error <br>Response Code {response.status_code}<br>{response.text}"
@@ -153,9 +125,7 @@ class AUBankAccount(Document):
         payload = {
             "TransactionEnquiryRequest": {
                 "uniqueRequestId": payment_request.request_id,
-                "transactionRequestId": random_string(10),
-                "batchNo": "",
-                "transactionRefNo": "",
+                "batchNo": payment_request.batch_number,
                 "corporateCode": self.corporate_code,
             }
         }
@@ -175,43 +145,73 @@ class AUBankAccount(Document):
             )
 
 
-def demo():
-    fetch_statement("dfd104a15b")
-
-
 @frappe.whitelist()
-def fetch_statement(au_bank_id):
-    au_bank = frappe.get_doc("AU Bank Account", au_bank_id)
-    from_date = "01-June-2024"
-    to_date = "06-June-2024"
-    au_bank.fetch_statement(from_date, to_date)
-    # settings = frappe.get_doc("AU Bank Integration")
-    # payload = {
-    #     "StartDate": "01-June-2024",
-    #     "RequestId": "1238713237890",
-    #     "OriginatingChannel": "Hari",
-    #     "ReferenceNumber": "128637162731723742",
-    #     "TransactionBranch": "2011",
-    #     "EndDate": "06-July-2024",
-    #     "AccountNumber": "1721200110002843",
-    # }
+def fetch_statement(bank_id):
+    au_bank = frappe.get_doc("AU Bank Account", bank_id)
+    from_date = "01-Oct-2024"
+    to_date = "01-Oct-2024"
+    data = au_bank.fetch_statement(from_date, to_date)
+    frappe.msgprint(data, title="Response")
 
-    # print(payload)
 
-    # encryption_key = settings.get_password("encryption_key")
-    # plain_text = json.dumps(payload, separators=(",", ":"))
-    # encrypted_data = encrypt(encryption_key, plain_text)
-    # data = {"encvalue": encrypted_data}
-    # headers = {"Authorization": f"Bearer {settings.get_password('access_token')}"}
-    # response = requests.request(
-    #     "POST",
-    #     "https://api.aubankuat.in/CBSAccountMiniStatementService/txn",
-    #     headers=headers,
-    #     json=data,
-    # )
-    # print(response.text)
-    # resp_data = decrypt(encryption_key, response.text)
-    # print(resp_data)
+def auto_update_bank_txs():
+    today = datetime.today()
+    from_date = today.strftime("%d-%B-%Y")
+    to_date = today.strftime("%d-%B-%Y")
+    for ab in frappe.get_all("AU Bank Account", filters={"active": 1}, pluck="name"):
+        update_bank_txs(ab, from_date, to_date)
+
+
+def demo():
+    from_date = "08-Oct-2024"
+    to_date = "08-Oct-2024"
+    au_bank = frappe.get_doc("AU Bank Account", "dfd104a15b")
+    response = au_bank.fetch_statement(from_date, to_date)
+    response = json.loads(response)
+    for tx in response["MiniStatement"]:
+        print(
+            f"Tx Type : {tx['TransactionType']} | Amount : {tx['TransactionAmount']} | TX ID : {tx['TxnId']}"
+        )
+
+
+def update_bank_txs(bank_id, from_date, to_date):
+    au_bank = frappe.get_doc("AU Bank Account", bank_id)
+    response = au_bank.fetch_statement(from_date, to_date)
+    try:
+        response = json.loads(response)
+        if response["TransactionStatus"]["ResponseCode"] == "99":
+            return
+        for tx in response["MiniStatement"]:
+            bank_account, bank_company = frappe.get_value(
+                "Bank Account", au_bank.bank_account, ["name", "company"]
+            )
+            company_abbr = frappe.get_cached_value("Company", bank_company, "abbr")
+            custom_transaction_id = company_abbr + "-" + strip(tx["TxnId"])
+
+            if frappe.db.exists(
+                "Bank Transaction",
+                {"transaction_id": custom_transaction_id, "docstatus": 1},
+            ):
+                continue
+
+            tx_dict = {
+                "doctype": "Bank Transaction",
+                "date": tx["ValueDate"],
+                "bank_account": bank_account,
+                "company": bank_company,
+                "description": tx["Description"],
+                "reference_number": tx["UTR"],
+                "transaction_id": custom_transaction_id,
+            }
+            if tx["TransactionType"] == "C":
+                tx_dict["deposit"] = tx["TransactionAmount"]
+            else:
+                tx_dict["withdrawal"] = tx["TransactionAmount"]
+            tx_doc = frappe.get_doc(tx_dict)
+            tx_doc.insert()
+            tx_doc.submit()
+    except ValueError as e:
+        frappe.throw("Invalid BANK RESPONSE")
 
 
 def upload_payment():
@@ -305,3 +305,71 @@ def payment_enquiry():
     print(response.text)
     mesg = decrypt(encryption_key, response.text)
     print(mesg)
+
+
+def dummy_payment():
+    settings = frappe.get_doc("AU Bank Integration")
+    payload = {
+        "TransactionCreationRequest": {
+            "uniqueRequestId": "Test0112233C1",
+            "corporateCode": "21240931",
+            "corporateProductCode": "ALLPAYMENTWIMPSBULK",
+            "transactionDetails": [
+                {
+                    "paymentMethodName": "NEFT",
+                    "remitterAccountNo": "1781220613087427",
+                    "amount": "1",
+                    "ifscCode": "BKID0004189",
+                    "payableCurrency": "INR",
+                    "beneAccNo": "418910110005337",
+                    "beneCode": "11111",
+                    "valueDate": "",
+                    "beneName": "APITEST01",
+                    "remarks": "H2H API",
+                    "transactionRefNo": "HKMJ123456",
+                    "paymentInstruction": "Payment Instruction 98",
+                    "email": "nrhdasa@gmail.com",
+                    "phoneNo": "7357010770",
+                }
+            ],
+        }
+    }
+    ##Dummy
+
+    encryption_key = settings.get_password("encryption_key")
+    encrypted_data = encrypt(encryption_key, json.dumps(payload, separators=(",", ":")))
+    data = {"encvalue": encrypted_data}
+    headers = {"Authorization": "Bearer " + settings.get_password("access_token")}
+    response = requests.request("POST", PAYOUT_URL, headers=headers, json=data)
+    if response.status_code == 200:
+        mesg = decrypt(encryption_key, response.text)
+        print(mesg)
+    else:
+        print(response.text)
+
+
+def dummy_enq():
+    dummy_enquiry("Test0112233C1")
+
+
+def dummy_enquiry(request_id):
+    settings = frappe.get_doc("AU Bank Integration")
+    encryption_key = settings.get_password("encryption_key")
+    payload = {
+        "TransactionEnquiryRequest": {
+            "uniqueRequestId": request_id,
+            "batchNo": "010410243787",
+            "corporateCode": "21240931",
+        }
+    }
+    print(payload)
+
+    encrypted_data = encrypt(encryption_key, json.dumps(payload, separators=(",", ":")))
+    data = {"encvalue": encrypted_data}
+    headers = {"Authorization": "Bearer " + settings.get_password("access_token")}
+    response = requests.request("POST", PAY_ENQUIRY_URL, headers=headers, json=data)
+    if response.status_code == 200:
+        mesg = decrypt(encryption_key, response.text)
+        print(mesg)
+    else:
+        print(response.text)

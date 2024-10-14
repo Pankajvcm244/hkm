@@ -8,6 +8,7 @@ from hkm.erpnext___custom.extend.accounts_controller import validate_gst_entry
 from hkm.erpnext___custom.overrides.buying_validations import (
     check_items_are_not_from_template,
     validate_work_order_item,
+    validate_one_time_vendor,
 )
 from datetime import date
 from frappe.utils.background_jobs import enqueue
@@ -47,6 +48,7 @@ class HKMPurchaseOrder(PurchaseOrder):
         super().validate()
         check_items_are_not_from_template(self)
         validate_work_order_item(self)
+        validate_one_time_vendor(self)
         self.validate_mrn_availble()
         return
 

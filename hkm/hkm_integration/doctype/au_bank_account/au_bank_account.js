@@ -10,7 +10,7 @@ frappe.ui.form.on("AU Bank Account", {
         freeze: 1,
         freeze_message: "Fetching Status",
         args: {
-          au_bank_id: frm.doc.name,
+          bank_id: frm.doc.name,
         },
         callback: function (r) {
           if (r.message) {

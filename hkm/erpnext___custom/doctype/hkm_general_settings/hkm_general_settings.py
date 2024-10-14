@@ -14,6 +14,9 @@ class HKMGeneralSettings(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		item_code_default_series: DF.Data | None
+		one_time_restrictions_enabled: DF.Check
+		one_time_vendor_limit: DF.Currency
 		po_approval_on_whatsapp: DF.Check
 		po_whatsapp_template: DF.Data | None
 		pp_group: DF.Link | None
