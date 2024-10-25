@@ -37,11 +37,51 @@ class SupplierCreationRequest(Document):
         bank_branch_code: DF.Data | None
         city: DF.Data
         country: DF.Link
+        email: DF.Data | None
         gstin: DF.Data | None
         mobile_number: DF.Data | None
         pan: DF.Data | None
         pincode: DF.Data
-        state: DF.Literal["", "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep Islands", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Other Territory", "Pondicherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"]
+        state: DF.Literal[
+            "",
+            "Andaman and Nicobar Islands",
+            "Andhra Pradesh",
+            "Arunachal Pradesh",
+            "Assam",
+            "Bihar",
+            "Chandigarh",
+            "Chhattisgarh",
+            "Dadra and Nagar Haveli and Daman and Diu",
+            "Delhi",
+            "Goa",
+            "Gujarat",
+            "Haryana",
+            "Himachal Pradesh",
+            "Jammu and Kashmir",
+            "Jharkhand",
+            "Karnataka",
+            "Kerala",
+            "Ladakh",
+            "Lakshadweep Islands",
+            "Madhya Pradesh",
+            "Maharashtra",
+            "Manipur",
+            "Meghalaya",
+            "Mizoram",
+            "Nagaland",
+            "Odisha",
+            "Other Territory",
+            "Pondicherry",
+            "Punjab",
+            "Rajasthan",
+            "Sikkim",
+            "Tamil Nadu",
+            "Telangana",
+            "Tripura",
+            "Uttar Pradesh",
+            "Uttarakhand",
+            "West Bengal",
+        ]
         status: DF.Literal["Pending", "Created", "Rejected"]
         supplier_group: DF.Link
         supplier_name: DF.Data
@@ -198,8 +238,8 @@ def make_contact(scr_doc, supplier_doc):
 
     contact = frappe.get_doc(contact_dict)
 
-    if scr_doc.get("email_id"):
-        contact.add_email(scr_doc.get("email_id"), is_primary=True)
+    if scr_doc.get("email"):
+        contact.add_email(scr_doc.get("email"), is_primary=True)
     if scr_doc.get("mobile_number"):
         contact.add_phone(scr_doc.get("mobile_number"), is_primary_mobile_no=True)
 

@@ -1,0 +1,244 @@
+# Copyright (c) 2024, Narahari Dasa and contributors
+# For license information, please see license.txt
+
+# import frappe
+from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
+    get_accounting_dimensions,
+)
+import frappe
+from frappe.model.document import Document
+from frappe.utils import flt, fmt_money
+from frappe.utils.nestedset import get_descendants_of
+
+
+class HKMBudget(Document):
+    # begin: auto-generated types
+    # This code is auto-generated. Do not modify anything in this block.
+
+    from typing import TYPE_CHECKING
+
+    if TYPE_CHECKING:
+        from frappe.types import DF
+
+        amended_from: DF.Link | None
+        amount: DF.Currency
+        cost_center: DF.Link | None
+        fiscal_year: DF.Link
+        project: DF.Link | None
+    # end: auto-generated types
+    pass
+
+    def validate(self):
+        dim_set = 0
+        for dim in ["cost_center", "project"] + get_accounting_dimensions():
+            if self.get(dim):
+                dim_set += 1
+        if dim_set != 1:
+            frappe.throw(f"Please select one Dimension. Not Less, Not More.")
+
+
+# args contians GL Entry Data
+def validate_expense_against_budget(args):
+    args = frappe._dict(args)
+    if not frappe.get_all("HKM Budget", limit=1):
+        return
+
+    if not frappe.get_cached_value("HKM Budget", {"fiscal_year": args.fiscal_year}):
+        return
+
+    default_dimensions = [
+        {
+            "fieldname": "project",
+            "document_type": "Project",
+        },
+        {
+            "fieldname": "cost_center",
+            "document_type": "Cost Center",
+        },
+    ]
+
+    for dimension in default_dimensions + get_accounting_dimensions(as_list=False):
+        budget_against = dimension.get("fieldname")
+
+        if args.get(budget_against):
+            doctype = dimension.get("document_type")
+
+            if frappe.get_cached_value("DocType", doctype, "is_tree"):
+                lft, rgt = frappe.get_cached_value(
+                    doctype, args.get(budget_against), ["lft", "rgt"]
+                )
+                condition = f""" and exists(select name from `tab{doctype}`
+                    where lft<={lft} and rgt>={rgt} and name = budget.{budget_against})"""  # nosec
+                args.is_tree = True
+            else:
+                condition = f" and budget.{budget_against}={frappe.db.escape(args.get(budget_against))}"
+                args.is_tree = False
+
+            args.budget_against_field = budget_against
+            args.budget_against_doctype = doctype
+            budget_records = frappe.db.sql(
+                f"""
+                SELECT
+                    name, amount, fiscal_year
+                FROM
+                    `tabHKM Budget` budget
+                WHERE
+                    fiscal_year= '{args.fiscal_year}'
+                    and docstatus=1
+                    {condition}
+            """,
+                as_dict=True,
+            )
+
+            if budget_records:
+                validate_budget_records(args, budget_records)
+    return
+
+
+def validate_budget_records(args, budget_records):
+    for budget in budget_records:
+        if flt(budget.amount):
+            args.yr_start_date, args.yr_end_date = frappe.get_cached_value(
+                "Fiscal Year", budget.fiscal_year, ["year_start_date", "year_end_date"]
+            )
+            args.dimension_condition = get_dimension_condition(args)
+            unpaid_invoices_amount = get_unpaid_purchase_invoices_amount(args)
+            unpaid_and_uninvoiced_po_amt = (
+                get_unpaid_and_uninvoiced_purchase_orders_amount(args)
+            )
+            payment_entries_amount = get_payment_entries_amount(args)
+
+            used_value = (
+                unpaid_invoices_amount
+                + unpaid_and_uninvoiced_po_amt
+                + payment_entries_amount
+            )
+            requested_value = args.get("debit")
+            if budget.amount <= (used_value + requested_value):
+                link = frappe.utils.get_link_to_form("HKM Budget", budget.name)
+                frappe.throw(
+                    msg=f"""
+                        Budget : {link}<br>
+                        Allowed : {frappe.bold(fmt_money(budget.amount, currency='₹'))}<br>
+                        Used : {frappe.bold(fmt_money(used_value, currency='₹'))}<br>
+                        ------------------------<br>
+                        Payments Made : {fmt_money(payment_entries_amount, currency='₹')}<br>
+                        Unpaid Invoices : {fmt_money(unpaid_invoices_amount, currency='₹')}<br>
+                        Unpaid/Uninvoiced POs : {fmt_money(unpaid_and_uninvoiced_po_amt, currency='₹')}
+                        """,
+                    title="Budget Limit Exceeded",
+                )
+    return
+
+
+def get_payment_entries_amount(args):
+    return flt(
+        frappe.db.sql(
+            f"""
+        select SUM(paid_amount)
+        from `tabPayment Entry` tmi
+        where docstatus=1 {args.dimension_condition}
+    """,
+            (args),
+        )[0][0]
+    )
+
+
+def get_dimension_condition(args):
+    budget_against_field = args.get("budget_against_field")
+    condition = ""
+    if args.is_tree:
+        lft, rgt = frappe.db.get_value(
+            args.budget_against_doctype,
+            args.get(budget_against_field),
+            ["lft", "rgt"],
+            as_dict=1,
+        )
+
+        ## tmi stands for table Main Transaction
+        condition += f""" 
+        AND EXISTS(
+            SELECT name
+            FROM `tab{args.budget_against_doctype}`
+            WHERE 
+                lft>={lft} 
+                AND rgt<={rgt}
+                AND name= tmi.{budget_against_field}
+            )"""
+    else:
+        budget_against_val = args.get(budget_against_field)
+        condition += f""" 
+        AND EXISTS(
+            SELECT name 
+            FROM `tab{args.budget_against_doctype}`
+            WHERE 
+                name=tmi.{budget_against_field} 
+                AND tmi.{budget_against_field} = '{budget_against_val}'
+            )"""
+    return condition
+
+
+def get_unpaid_purchase_invoices_amount(args):
+    return flt(
+        frappe.db.sql(
+            f"""
+        SELECT SUM(unpaid_amount)
+        FROM (
+            SELECT 
+                tmi.name,
+                (tmi.grand_total - 
+                    (IFNULL(SUM(tper.allocated_amount),0) + IFNULL(SUM(tjea.debit),0))
+                ) as unpaid_amount
+            FROM `tabPurchase Invoice` tmi 
+            LEFT JOIN `tabPayment Entry Reference` tper
+                ON tper.reference_doctype = "Purchase Invoice" AND tper.reference_name = tmi.name
+            LEFT JOIN `tabPayment Entry` tpe
+                ON tpe.name = tper.parent
+            LEFT JOIN `tabJournal Entry Account` tjea
+                ON tjea.reference_type = "Purchase Invoice" AND tjea.reference_name = tmi.name
+            LEFT JOIN `tabJournal Entry` tje
+                ON tje.name = tjea.parent
+            WHERE tmi.docstatus  = 1
+                AND tmi.is_paid = 0
+                AND (tpe.docstatus IS NULL OR tpe.docstatus = 1)
+                AND (tje.docstatus IS NULL OR tje.docstatus = 1)
+                AND tmi.posting_date BETWEEN '{args.yr_start_date}' AND '{args.yr_end_date}'
+                {args.dimension_condition}
+            GROUP BY tmi.name) up
+    """
+        )[0][0]
+    )
+
+
+def get_unpaid_and_uninvoiced_purchase_orders_amount(args):
+    return flt(
+        frappe.db.sql(
+            f"""
+        SELECT SUM(unpaid_amount)
+        FROM (
+            SELECT tmi.name,tmi.grand_total, 
+                (tmi.grand_total - (IFNULL(SUM(tper.allocated_amount),0) + IFNULL(SUM(tjea.debit),0) ) - IFNULL(SUM(tpii.amount),0) ) as unpaid_amount
+            FROM `tabPurchase Order` tmi
+            LEFT JOIN `tabPayment Entry Reference` tper
+                ON tper.reference_doctype = "Purchase Order" AND tper.reference_name = tmi.name
+            LEFT JOIN `tabPayment Entry` tpe
+                ON tpe.name = tper.parent
+            LEFT JOIN `tabJournal Entry Account` tjea
+                ON tjea.reference_type = "Purchase Order" AND tjea.reference_name = tmi.name
+            LEFT JOIN `tabJournal Entry` tje
+                ON tje.name = tjea.parent
+            LEFT JOIN `tabPurchase Invoice Item` tpii 
+                ON tpii.purchase_order = tmi.name
+            LEFT JOIN `tabPurchase Invoice` tpi 
+                ON tpi.name = tpii.parent 
+            WHERE tmi.docstatus  = 1
+                AND (tpe.docstatus IS NULL OR tpe.docstatus = 1)
+                AND (tje.docstatus IS NULL OR tje.docstatus = 1)
+                AND (tpi.docstatus IS NULL OR tpi.docstatus = 1)
+                AND tmi.transaction_date BETWEEN '{args.yr_start_date}' AND '{args.yr_end_date}'
+                {args.dimension_condition}
+            GROUP BY tmi.name
+            ) up
+        """
+        )[0][0]
+    )

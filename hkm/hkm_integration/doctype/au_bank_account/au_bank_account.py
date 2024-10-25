@@ -1,9 +1,10 @@
 # Copyright (c) 2024, Narahari Dasa and contributors
 # For license information, please see license.txt
 
-from datetime import datetime
+from datetime import datetime, timedelta
 import json
 import requests
+from frappe.model import docstatus
 from frappe.utils import random_string
 from frappe.utils.data import strip
 from hkm.hkm_integration.doctype.au_bank_integration.encryption import encrypt, decrypt
@@ -43,7 +44,6 @@ class AUBankAccount(Document):
             "ReferenceNumber": "128637162731723742",
             "TransactionBranch": "2011",
         }
-        print(payload)
         encryption_key = settings.get_password("encryption_key")
         plain_text = json.dumps(payload, separators=(",", ":"))
         encdata = encrypt(encryption_key, plain_text)
@@ -52,7 +52,7 @@ class AUBankAccount(Document):
         response = requests.request("POST", MINI_STAT_URL, headers=headers, json=data)
         if response.status_code == 200:
             mesg = decrypt(encryption_key, response.text)
-            print(mesg)
+            # print(mesg)
             return mesg
         else:
             frappe.msgprint(
@@ -145,18 +145,29 @@ class AUBankAccount(Document):
             )
 
 
+def dummy():
+    fetch_statement("dfd104a15b")
+
+
 @frappe.whitelist()
 def fetch_statement(bank_id):
     au_bank = frappe.get_doc("AU Bank Account", bank_id)
-    from_date = "01-Oct-2024"
-    to_date = "01-Oct-2024"
+    from_date = "14-Oct-2024"
+    to_date = "14-Oct-2024"
     data = au_bank.fetch_statement(from_date, to_date)
-    frappe.msgprint(data, title="Response")
+    print(data)
+    data = json.loads(data)
+    for tx in data["MiniStatement"]:
+        print(
+            f"Tx Type : {tx['TransactionType']} | Amount : {tx['TransactionAmount']} | TX ID : {tx['TxnId']}"
+        )
+    # frappe.msgprint(data, title="Response")
 
 
 def auto_update_bank_txs():
+    # Get today's date
     today = datetime.today()
-    from_date = today.strftime("%d-%B-%Y")
+    from_date = (today - timedelta(days=5)).strftime("%d-%B-%Y")
     to_date = today.strftime("%d-%B-%Y")
     for ab in frappe.get_all("AU Bank Account", filters={"active": 1}, pluck="name"):
         update_bank_txs(ab, from_date, to_date)
@@ -168,6 +179,7 @@ def demo():
     au_bank = frappe.get_doc("AU Bank Account", "dfd104a15b")
     response = au_bank.fetch_statement(from_date, to_date)
     response = json.loads(response)
+
     for tx in response["MiniStatement"]:
         print(
             f"Tx Type : {tx['TransactionType']} | Amount : {tx['TransactionAmount']} | TX ID : {tx['TxnId']}"
@@ -182,16 +194,23 @@ def update_bank_txs(bank_id, from_date, to_date):
         if response["TransactionStatus"]["ResponseCode"] == "99":
             return
         for tx in response["MiniStatement"]:
+
             bank_account, bank_company = frappe.get_value(
                 "Bank Account", au_bank.bank_account, ["name", "company"]
             )
-            company_abbr = frappe.get_cached_value("Company", bank_company, "abbr")
-            custom_transaction_id = company_abbr + "-" + strip(tx["TxnId"])
 
-            if frappe.db.exists(
-                "Bank Transaction",
-                {"transaction_id": custom_transaction_id, "docstatus": 1},
-            ):
+            tx_amount = float(tx["TransactionAmount"])
+
+            filters = frappe._dict(
+                date=tx["ValueDate"],
+                bank_account=bank_account,
+                docstatus=1,
+                description=strip(tx["Description"]),
+                deposit=tx_amount if tx["TransactionType"] == "C" else 0,
+                withdrawal=tx_amount if tx["TransactionType"] == "D" else 0,
+            )
+
+            if frappe.db.exists("Bank Transaction", filters):
                 continue
 
             tx_dict = {
@@ -200,18 +219,21 @@ def update_bank_txs(bank_id, from_date, to_date):
                 "bank_account": bank_account,
                 "company": bank_company,
                 "description": tx["Description"],
-                "reference_number": tx["UTR"],
-                "transaction_id": custom_transaction_id,
+                "reference_number": (
+                    f'{tx["UTR"]}'
+                    if not tx["ChequeNumber"]
+                    else " | Cheque No.: " + tx["ChequeNumber"]
+                ),
+                "deposit": tx_amount if tx["TransactionType"] == "C" else 0,
+                "withdrawal": tx_amount if tx["TransactionType"] == "D" else 0,
             }
-            if tx["TransactionType"] == "C":
-                tx_dict["deposit"] = tx["TransactionAmount"]
-            else:
-                tx_dict["withdrawal"] = tx["TransactionAmount"]
             tx_doc = frappe.get_doc(tx_dict)
             tx_doc.insert()
             tx_doc.submit()
+            frappe.db.commit()
     except ValueError as e:
         frappe.throw("Invalid BANK RESPONSE")
+        print(e)
 
 
 def upload_payment():
@@ -270,7 +292,6 @@ def upload_payment():
     #         ],
     #     }
     # }
-    print(payload)
     encrypted_data = encrypt(encryption_key, json.dumps(payload, separators=(",", ":")))
     data = {"encvalue": encrypted_data}
     headers = {"Authorization": "Bearer " + settings.get_password("access_token")}

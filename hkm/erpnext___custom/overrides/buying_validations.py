@@ -1,5 +1,6 @@
 import frappe
 from frappe import _
+from frappe.utils import get_link_to_form, get_url_to_form, getdate
 
 
 def validate_work_order_item(self):
@@ -53,4 +54,66 @@ def validate_one_time_vendor(self):
         frappe.throw(
             f"One Time Vendor can not have a transaction more than {settings.one_time_vendor_limit}"
         )
+    return
+
+
+def validate_buying_dates(doc=None, doctype=None, docname=None):
+    if not doc:
+        doc = frappe.get_doc(doctype, docname)
+    if doc.doctype == "Purchase Order":
+        validate_against_child_doctype(
+            doc,
+            "Material Request",
+            "material_request",
+            "transaction_date",
+            "transaction_date",
+        )
+    if doc.doctype == "Purchase Receipt":
+        validate_against_child_doctype(
+            doc,
+            "Purchase Order",
+            "purchase_order",
+            "posting_date",
+            "transaction_date",
+        )
+    if doc.doctype == "Purchase Invoice":
+        validate_against_child_doctype(
+            doc,
+            "Purchase Receipt",
+            "purchase_receipt",
+            "posting_date",
+            "posting_date",
+        )
+        validate_against_child_doctype(
+            doc, "Purchase Order", "purchase_order", "posting_date", "transaction_date"
+        )
+    return
+
+
+def validate_against_child_doctype(
+    doc, child_doctype, parent_child_field, parent_date_field, child_doc_date_field
+):
+    child_docs = list(
+        set(
+            [
+                i.get(parent_child_field)
+                for i in doc.get("items")
+                if i.get(parent_child_field)
+            ]
+        )
+    )
+
+    for m in frappe.get_all(
+        child_doctype,
+        filters={"name": ("in", child_docs)},
+        fields=["name", child_doc_date_field],
+    ):
+        child_doc_link = get_link_to_form(child_doctype, m.name)
+        if m.get(child_doc_date_field) > getdate(doc.get(parent_date_field)):
+            frappe.throw(
+                f"{doc.doctype} Date should be greater than {child_doctype} Date.<br>"
+                f"{child_doctype}: {child_doc_link} <br>"
+                f"{child_doctype} Date: {m.get(child_doc_date_field)} <br>"
+                f"{doc.doctype} Date: {doc.get(parent_date_field)}"
+            )
     return

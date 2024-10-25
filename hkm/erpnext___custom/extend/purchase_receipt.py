@@ -1,9 +1,11 @@
+from hkm.erpnext___custom.overrides.buying_validations import validate_buying_dates
 import frappe
 from frappe import _
 
 
 def validate(self, method=None):
     validate_word_order(self)
+    validate_buying_dates(self)
 
 
 def validate_word_order(self):
@@ -13,10 +15,9 @@ def validate_word_order(self):
         work_order = frappe.db.get_value("Purchase Order", po, "for_a_work_order")
         if work_order == 1:
             frappe.throw(
-                _('Work Order {0} isn\'t allowed to have a Purchase Receipt.' )
-                .format(
+                _("Work Order {0} isn't allowed to have a Purchase Receipt.").format(
                     frappe.bold(po),
                 ),
-                title=_("Not Allowed")
+                title=_("Not Allowed"),
             )
     return

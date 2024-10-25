@@ -11,6 +11,7 @@
   "gstin",
   "supplier_name",
   "mobile_number",
+  "email",
   "column_break_irwm",
   "supplier_type",
   "supplier_group",
@@ -182,11 +183,17 @@
    "no_copy": 1,
    "options": "Pending\nCreated\nRejected",
    "read_only": 1
+  },
+  {
+   "fieldname": "email",
+   "fieldtype": "Data",
+   "label": "Email",
+   "options": "Email"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-10-10 13:16:55.326126",
+ "modified": "2024-10-15 12:29:32.652558",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "Supplier Creation Request",
