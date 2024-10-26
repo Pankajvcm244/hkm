@@ -108,10 +108,13 @@ def validate_budget_records(args, budget_records):
             )
             payment_entries_amount = get_payment_entries_amount(args)
 
+            additional_expenses = get_additional_expenses_amount(args)
+
             used_value = (
                 unpaid_invoices_amount
                 + unpaid_and_uninvoiced_po_amt
                 + payment_entries_amount
+                + additional_expenses
             )
             requested_value = args.get("debit")
             if budget.amount <= (used_value + requested_value):
@@ -124,7 +127,8 @@ def validate_budget_records(args, budget_records):
                         ------------------------<br>
                         Payments Made : {fmt_money(payment_entries_amount, currency='₹')}<br>
                         Unpaid Invoices : {fmt_money(unpaid_invoices_amount, currency='₹')}<br>
-                        Unpaid/Uninvoiced POs : {fmt_money(unpaid_and_uninvoiced_po_amt, currency='₹')}
+                        Unpaid/Uninvoiced POs : {fmt_money(unpaid_and_uninvoiced_po_amt, currency='₹')}<br>
+                        Additional Expenses : {fmt_money(additional_expenses, currency='₹')}
                         """,
                     title="Budget Limit Exceeded",
                 )
@@ -149,10 +153,7 @@ def get_dimension_condition(args):
     condition = ""
     if args.is_tree:
         lft, rgt = frappe.db.get_value(
-            args.budget_against_doctype,
-            args.get(budget_against_field),
-            ["lft", "rgt"],
-            as_dict=1,
+            args.budget_against_doctype, args.get(budget_against_field), ["lft", "rgt"]
         )
 
         ## tmi stands for table Main Transaction
@@ -240,5 +241,24 @@ def get_unpaid_and_uninvoiced_purchase_orders_amount(args):
             GROUP BY tmi.name
             ) up
         """
+        )[0][0]
+    )
+
+
+def get_additional_expenses_amount(args):
+    exclude_voucher_types_str = ", ".join(["'%s'" % vt for vt in ["Purchase Invoice"]])
+    return flt(
+        frappe.db.sql(
+            f"""
+        SELECT SUM(tmi.debit) - SUM(tmi.credit)
+        FROM `tabGL Entry` tmi
+        JOIN `tabAccount` ta
+            ON tmi.account = ta.name
+        WHERE is_cancelled = 0
+        AND ta.root_type = 'Expense'
+        AND voucher_type NOT IN ({exclude_voucher_types_str})
+        AND tmi.fiscal_year  = '{args.fiscal_year}'
+        {args.dimension_condition}
+    """
         )[0][0]
     )
