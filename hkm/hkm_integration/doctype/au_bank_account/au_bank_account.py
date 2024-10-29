@@ -167,23 +167,28 @@ def fetch_statement(bank_id):
 def auto_update_bank_txs():
     # Get today's date
     today = datetime.today()
-    from_date = (today - timedelta(days=5)).strftime("%d-%B-%Y")
+    from_date = (today - timedelta(days=10)).strftime("%d-%B-%Y")
     to_date = today.strftime("%d-%B-%Y")
     for ab in frappe.get_all("AU Bank Account", filters={"active": 1}, pluck="name"):
         update_bank_txs(ab, from_date, to_date)
 
 
 def demo():
-    from_date = "08-Oct-2024"
-    to_date = "08-Oct-2024"
+    from_date = "25-Oct-2024"
+    to_date = "25-Oct-2024"
     au_bank = frappe.get_doc("AU Bank Account", "dfd104a15b")
     response = au_bank.fetch_statement(from_date, to_date)
     response = json.loads(response)
 
     for tx in response["MiniStatement"]:
-        print(
-            f"Tx Type : {tx['TransactionType']} | Amount : {tx['TransactionAmount']} | TX ID : {tx['TxnId']}"
-        )
+        if tx["TransactionDate"][:10] != tx["ValueDate"][:10]:
+            print(
+                f"""
+                T -  {tx['TransactionDate']}  & V - {tx['ValueDate']}
+                {tx['TransactionType']} {tx['TransactionAmount']} ({tx['UTR']} - {tx['ChequeNumber']} )  
+                --------------------------------------------------------------------------------------
+                """
+            )
 
 
 def update_bank_txs(bank_id, from_date, to_date):

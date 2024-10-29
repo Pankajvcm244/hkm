@@ -4,8 +4,7 @@
 ### This file has to be dynamically changed everytime, we need to send some customisations to other sites.
 
 custom_fixtures = [
-    # "DJ Receipt Format"
-    # {"dt": "Custom Field", "filters": [["name", "=", "Purchase Invoice-department"]]}
+    "DJ Receipt Format",
     # "Wiki Space",
     # "Wiki Page",
     # "S3 Backup Settings",
@@ -13,9 +12,9 @@ custom_fixtures = [
     # # "Sadhana Parameter",
     # "SMS Settings",
     # "DJ Receipt Format",
-    # "Workflow Action Master",
-    # "Workflow State",
-    # "Role",
+    "Workflow Action Master",
+    "Workflow State",
+    "Role",
     {
         "dt": "Workflow",
         "filters": [
@@ -25,59 +24,43 @@ custom_fixtures = [
                 "in",
                 [
                     "Donation Receipt",
-                    # "Item Creation Request",
-                    # "Supplier Creation Request",
-                    # "Purchase Order",
-                    # "Donor ECS Creation Request",
+                    "Purchase Order",
+                    "Donor ECS Creation Request",
                 ],
             ],
         ],
     },
-    # {
-    #     "dt": "Custom Field",
-    #     "filters": [
-    #         [
-    #             "dt",
-    #             "in",
-    #             [
-    #                 # "Material Request",
-    #                 # "Purchase Order",
-    #                 # "Purchase Receipt",
-    #                 # "Purchase Invoice",
-    #                 # "Sales Invoice",
-    #                 # "Stock Entry",
-    #                 "Payment Entry",
-    #                 "Journal Entry",
-    #                 # "Customer",
-    #                 # "Asset"
-    #                 # "Supplier",
-    #             ],
-    #         ],
-    #         ["fieldname", "!=", "ka_head"],
-    #     ],
-    # },
-    # # {
-    # #     "dt": "Property Setter",
-    # #     "filters": [
-    # #         [
-    # #             "doc_type",
-    # #             "in",
-    # #             ["Purchase Invoice", "Sales Invoice", "Stock Entry", "Payment Entry"],
-    # #         ],
-    # #     ],
-    # # },
-    # {
-    #     "dt": "Custom DocPerm",
-    #     "filters": [
-    #         [
-    #             "parent",
-    #             "in",
-    #             [
-    #                 "Account",
-    #             ],
-    #         ],
-    #     ],
-    # },
-    # "Custom DocPerm",
-    # "DJ Mode of Payment",
+    {
+        "dt": "Custom Field",
+        "filters": [
+            [
+                "dt",
+                "in",
+                [
+                    "Material Request",
+                    "Purchase Order",
+                    "Purchase Receipt",
+                    "Purchase Invoice",
+                    "Sales Invoice",
+                    "Stock Entry",
+                    "Payment Entry",
+                    "Journal Entry",
+                    "Customer",
+                    "Asset" "Supplier",
+                ],
+            ],
+        ],
+    },
+    {
+        "dt": "Property Setter",
+        "filters": [
+            # [
+            #     "doc_type",
+            #     "in",
+            #     ["Purchase Invoice", "Sales Invoice", "Stock Entry", "Payment Entry"],
+            # ],
+        ],
+    },
+    "Custom DocPerm",
+    "DJ Mode of Payment",
 ]
