@@ -37,8 +37,6 @@ def webhook():
     if payload["event"] == "payment.captured":
         payment_payload = payload["payload"]["payment"]["entity"]
 
-        frappe.errprint(payment_payload)
-
         if payment_payload["description"] == "Adding Credits to Wallet":
             add_wallet_credits(payment_payload)
         elif payment_payload["description"] == "Cart Purchase":

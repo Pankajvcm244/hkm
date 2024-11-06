@@ -7,9 +7,6 @@ def filter_sellable_items(items,price_list,company):
 	join_item = ','.join(["'"+str(item)+"'" for item in items])
 	join_item = "({})".format(join_item)
 
-	frappe.errprint(items)
-	frappe.errprint(join_item)
-
 	query ="""
 			SELECT
 				item.`item_code` as code,
@@ -29,6 +26,5 @@ def filter_sellable_items(items,price_list,company):
 			WHERE item.has_variants=0 and item.name IN {} and item_price.price_list = '{}' and (item_template.name is null or item_template.company = '{}')
 			GROUP BY item.name
 			""".format(join_item,price_list,company)
-	frappe.errprint(query)
 	data = frappe.db.sql(query,as_dict=1)
 	return data

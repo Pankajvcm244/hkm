@@ -54,8 +54,6 @@ def execute(filters=None):
             "Fiscal Year", budget.fiscal_year, ["year_start_date", "year_end_date"]
         )
         args.dimension_condition = get_dimension_condition(args)
-
-        frappe.errprint(args.dimension_condition)
         unpaid_invoices_amount = get_unpaid_purchase_invoices_amount(args)
         unpaid_and_uninvoiced_po_amt = get_unpaid_and_uninvoiced_purchase_orders_amount(
             args

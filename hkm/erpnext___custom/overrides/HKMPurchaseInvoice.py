@@ -4,7 +4,6 @@
 from __future__ import unicode_literals
 import datetime
 
-from attr import fields
 from pymysql import Date
 from hkm.erpnext___custom.overrides.buying_validations import (
     validate_buying_dates,

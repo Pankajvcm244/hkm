@@ -215,6 +215,7 @@ def make_contact(scr_doc, supplier_doc):
     contact_dict = {
         "doctype": "Contact",
         "is_primary_contact": 1,
+        "is_billing_contact": 1,
         "links": [
             {"link_doctype": supplier_doc.doctype, "link_name": supplier_doc.name}
         ],

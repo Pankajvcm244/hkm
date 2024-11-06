@@ -45,9 +45,7 @@ def execute(filters=None):
         )
 
     purchase_data_map = {}
-    frappe.errprint(purchase_data)
     for i in purchase_data:
-        frappe.errprint(i)
         purchase_data_map.setdefault(i.department + "-" + i.supplier, i.total)
 
     unique_departments = list(set([row["department"] for row in purchase_data]))

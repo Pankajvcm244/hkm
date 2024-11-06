@@ -41,3 +41,9 @@ class AUBankIntegration(Document):
             self.access_token = response.json()["access_token"]
             self.save()
             frappe.db.commit()
+
+@frappe.whitelist()
+def refresh_token():
+    frappe.only_for("Accounts Manager")
+    settings = frappe.get_doc("AU Bank Integration")
+    settings.generate_token()

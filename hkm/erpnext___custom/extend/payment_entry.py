@@ -84,9 +84,6 @@ def before_save(self, method=None):
             contact_doc = frappe.get_doc("Contact", contact_id)
             if len(contact_doc.phone_nos) > 0:
                 mobile_number = contact_doc.phone_nos[0].phone
-
-    frappe.errprint("Mobile Number")
-    frappe.errprint(mobile_number)
     if mobile_number:
         match = re.search(r"(\d{10})\D*$", mobile_number)
 
