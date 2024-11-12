@@ -23,28 +23,28 @@ frappe.ui.form.on("Item Creation Request", {
       });
     }
   },
-  tax_category: function (frm) {
-    console.log("tax");
-    frappe.db.get_doc("Item Tax Template", frm.doc.tax_category).then((doc) => {
-      // frm.doc.default_company = doc.company
-      frm.set_value("default_company", doc.company);
-    });
-  },
+  // tax_category: function (frm) {
+  //   console.log("tax");
+  //   frappe.db.get_doc("Item Tax Template", frm.doc.tax_category).then((doc) => {
+  //     // frm.doc.default_company = doc.company
+  //     frm.set_value("default_company", doc.company);
+  //   });
+  // },
   onload: function (frm) {
     frm.set_query("default_sales_income_account", function () {
       return {
         filters: {
           root_type: "Income",
           is_group: 0,
-          company: frm.doc.default_company,
+          // company: frm.doc.default_company,
         },
       };
     });
-    frm.set_query("tax_category", function () {
-      return {
-        filters: { company: frm.doc.default_company },
-      };
-    });
+    // frm.set_query("tax_category", function () {
+    //   return {
+    //     filters: { company: frm.doc.default_company },
+    //   };
+    // });
   },
 });
 
