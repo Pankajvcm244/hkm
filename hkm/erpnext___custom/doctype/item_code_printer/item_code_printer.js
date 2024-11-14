@@ -3,6 +3,110 @@
 
 frappe.ui.form.on('Item Code Printer', {
     refresh(frm) {
+        frm.add_custom_button(
+            __("test"),
+            async function () {
+              if (
+                frm.doc.item_code &&
+                frm.doc.company &&
+                frm.doc.price_list &&
+                frm.doc.quantity_exp
+              ) {
+                console.log(frm.doc.item_code);
+                frappe.ui.form
+                  .qz_connect()
+                  .then(function () {
+                    var config = qz.configs.create("TE210"); // Exact printer name from OS
+                    var print_data = [];
+                    var shift = 250; // Adjust shift for three stickers per row
+      
+                    frappe.call({
+                      method:
+                        "hkm.erpnext___custom.godex_print.filter_sellable_items",
+                      args: {
+                        items: [frm.doc.item_code],
+                        price_list: frm.doc.price_list,
+                        company: frm.doc.company,
+                      },
+                      freeze: true,
+                      callback: (r) => {
+                        console.log(r.message);
+                        var items_detailed = r.message;
+                        var total_items = [];
+                        var qty = frm.doc.quantity_exp;
+                       
+                        var mfg_date =  new Date(frm.doc.manufacturing_date);
+                        var expiry_date = addDaysToDate(mfg_date, frm.doc.day_after_expiry);
+
+                        mfg_date = formatDateToDMY(mfg_date);
+                        expiry_date = formatDateToDMY(expiry_date);
+                        
+                    
+                        for (var i = 0; i < qty; i++) {
+                          total_items.push(items_detailed[0]);
+                        }
+      
+                        var group_string = "^XA"; 
+                        var item_processed = 0;
+      
+                        for (var j = 0; j < qty; j += 3) {
+                          for (var g = 0; g < 3; g++) {
+                            if (j + g < total_items.length) {
+                              if (item_processed == qty) {
+                                break;
+                              }
+      
+                              var xOffset = g == 0 ?   25 + g * shift : g==1 ? 45 + g * shift : 75 + g * shift;
+                              var yOffset = 20;
+      
+                              group_string += `^FO${xOffset},${yOffset} ^BCN,100,N,N,N ^FD${
+                                total_items[j + g]["code"]
+                              }^FS`;
+      
+                              group_string += `^FO${xOffset},${
+                                yOffset + 5 + 120
+                              }^A0N,30,20 ^FW100 ^FD${""}^FS `;
+      
+                              group_string += `^FO${xOffset},${
+                                yOffset + 5 + 110
+                              }^FB200,3,5,L^A0N,30,20 ^FD${
+                                "ITEM CODE:" + total_items[j + g]["code"]
+                              }\n${"MFG:" + mfg_date}\n${"EXP:" + expiry_date}^FS`;
+      
+                              item_processed++;
+      
+                            }
+                          }
+                          if (item_processed == qty) {
+                            break;
+                          }
+                          group_string += "^XZ\n^XA"; 
+                        }
+                        group_string += "^XZ";
+                        print_data.push(group_string);
+      
+                        return qz.print(config, print_data);
+      
+                      
+                      },
+                      error: (r) => {
+                        // on error
+                      },
+                    });
+                  })
+                  .then(frappe.ui.form.qz_success)
+                  .catch((err) => {
+                    frappe.ui.form.qz_fail(err);
+                  });
+                // frm.events.on_success(frm);
+              } else {
+                frappe.throw("Fields for printing Item Labels are not available.");
+              }
+      
+              // Perform desired action such as routing to new form or fetching etc.
+            },
+            __("Utilities")
+          );
         frm.add_custom_button(__("Print Item Codes"), async function () {
             if (frm.doc.item_code && frm.doc.company && frm.doc.price_list && frm.doc.quantity) {
                 console.log(frm.doc.item_code)
@@ -93,6 +197,8 @@ frappe.ui.form.on('Item Code Printer', {
             }
         }, __("Utilities"));
     },
+    
+
     on_success: function (frm) {
         frm.set_value("item_code", null);
         frm.set_value("quantity", null);
@@ -125,4 +231,17 @@ frappe.ui.form.on('Item Code Printer', {
         }
         return final_data;
     }
+    
 })
+function formatDateToDMY(date) {
+    return date.toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: '2-digit',
+        year: '2-digit'
+    });
+}
+function addDaysToDate(date, daysToAdd) {
+    let newDate = new Date(date); // Clone the original date
+    newDate.setDate(newDate.getDate() + daysToAdd);
+    return newDate;
+}

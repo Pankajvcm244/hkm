@@ -12,7 +12,11 @@
   "quantity",
   "date_printer_section",
   "date",
-  "quantity_date"
+  "quantity_date",
+  "expiry_date_printer_section_section",
+  "manufacturing_date",
+  "day_after_expiry",
+  "quantity_exp"
  ],
  "fields": [
   {
@@ -54,12 +58,32 @@
    "fieldname": "quantity_date",
    "fieldtype": "Int",
    "label": "Quantity (Date)"
+  },
+  {
+   "fieldname": "expiry_date_printer_section_section",
+   "fieldtype": "Section Break",
+   "label": "Expiry Date Printer Section"
+  },
+  {
+   "fieldname": "manufacturing_date",
+   "fieldtype": "Date",
+   "label": "Manufacturing Date"
+  },
+  {
+   "fieldname": "day_after_expiry",
+   "fieldtype": "Int",
+   "label": "Day After Expiry"
+  },
+  {
+   "fieldname": "quantity_exp",
+   "fieldtype": "Int",
+   "label": "Quantity (EXP)"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-09-04 11:44:26.271465",
+ "modified": "2024-11-13 14:49:22.903781",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "Item Code Printer",
