@@ -110,3 +110,10 @@ class HKMPurchaseOrder(PurchaseOrder):
                     )
                 )
         return
+
+
+@frappe.whitelist()
+def resend_approver_request(docname, method):
+    frappe.only_for(["Purchase User", "Purchase Manager"])
+    doc = frappe.get_doc("Purchase Order", docname)
+    assign_and_notify_next_authority(doc, method)

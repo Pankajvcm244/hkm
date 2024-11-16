@@ -42,7 +42,7 @@ def get_alm_level(doc, amount_field="total"):
     return None
 
 
-def assign_and_notify_next_authority(doc):
+def assign_and_notify_next_authority(doc, method="Email"):
     user = None
     current_state = doc.workflow_state
     states = ("Checked", "Recommended", "First Level Approved")
@@ -67,7 +67,7 @@ def assign_and_notify_next_authority(doc):
         close_assignments(doc)
         assign_to_next_approving_authority(doc, user)
         mobile_no = frappe.get_value("User", user, "mobile_no")
-        if is_eligible_to_send_on_whatsapp(user, mobile_no):
+        if is_eligible_to_send_on_whatsapp(user, mobile_no) and method == "WhatsApp":
             allowed_options = get_allowed_options(user, doc)
             send_whatsapp_approval(doc, user, mobile_no, allowed_options)
         else:

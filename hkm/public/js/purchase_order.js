@@ -8,6 +8,33 @@ frappe.ui.form.on("Purchase Order", {
       };
     });
   },
+  onload: function (frm) {
+    frm.add_custom_button(__("Resend Approval Request"), function () {
+      frappe.prompt(
+        {
+          label: "Method",
+          fieldname: "method",
+          fieldtype: "Select",
+          options: "WhatsApp\nEmail",
+        },
+        (values) => {
+          console.log(values.method);
+          frappe.call({
+            method:
+              "hkm.erpnext___custom.overrides.purchase_order.HKMPurchaseOrder.resend_approver_request",
+            args: {
+              docname: frm.doc.name,
+              method: values.method,
+            },
+            callback: (r) => {
+              var doc = frappe.model.sync(r.message);
+            },
+          });
+        }
+      );
+      // resend_approver_request
+    });
+  },
 });
 
 frappe.ui.form.on("Purchase Order Item", {
