@@ -133,7 +133,7 @@
    "type": "Link"
   }
  ],
- "modified": "2024-10-12 14:12:27.339017",
+ "modified": "2024-11-17 15:44:15.569199",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM",
@@ -161,14 +161,6 @@
    "doc_view": "List",
    "label": "Freeze Transactions",
    "link_to": "Freeze Transaction Settings",
-   "stats_filter": "[]",
-   "type": "DocType"
-  },
-  {
-   "color": "Grey",
-   "doc_view": "List",
-   "label": "User Company Permissions",
-   "link_to": "User Company Allowed",
    "stats_filter": "[]",
    "type": "DocType"
   },
