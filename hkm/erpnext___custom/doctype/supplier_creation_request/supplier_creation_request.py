@@ -40,6 +40,8 @@ class SupplierCreationRequest(Document):
         email: DF.Data | None
         gstin: DF.Data | None
         mobile_number: DF.Data | None
+        msme_number: DF.Data | None
+        msme_type: DF.Literal["Micro", "Small", "Medium"]
         pan: DF.Data | None
         pincode: DF.Data
         state: DF.Literal["", "Andaman and Nicobar Islands", "Andhra Pradesh", "Arunachal Pradesh", "Assam", "Bihar", "Chandigarh", "Chhattisgarh", "Dadra and Nagar Haveli and Daman and Diu", "Delhi", "Goa", "Gujarat", "Haryana", "Himachal Pradesh", "Jammu and Kashmir", "Jharkhand", "Karnataka", "Kerala", "Ladakh", "Lakshadweep Islands", "Madhya Pradesh", "Maharashtra", "Manipur", "Meghalaya", "Mizoram", "Nagaland", "Odisha", "Other Territory", "Pondicherry", "Punjab", "Rajasthan", "Sikkim", "Tamil Nadu", "Telangana", "Tripura", "Uttar Pradesh", "Uttarakhand", "West Bengal"]
@@ -75,6 +77,10 @@ def quickly_create_supplier(request):
         supplier_dict["gst_category"] = "Overseas"
     else:
         supplier_dict["gst_category"] = "Unregistered"
+    if meta.has_field("msme_type") and scr_doc.msme_type:
+        supplier_dict["msme_type"] = scr_doc.msme_type
+    if meta.has_field("msme_number") and scr_doc.msme_number:
+        supplier_dict["msme_number"] = scr_doc.msme_number        
 
     supplier_doc = frappe.get_doc(supplier_dict)
     supplier_doc.insert()
