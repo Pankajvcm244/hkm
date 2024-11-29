@@ -195,7 +195,7 @@
    "fieldname": "msme_type",
    "fieldtype": "Select",
    "label": "MSME Type",
-   "options": "Micro\nSmall\nMedium"
+   "options": "\nMicro\nSmall\nMedium"
   },
   {
    "fieldname": "msme_number",
@@ -205,7 +205,7 @@
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-11-29 11:58:19.564333",
+ "modified": "2024-11-29 13:33:50.378375",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "Supplier Creation Request",
