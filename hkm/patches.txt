@@ -4,3 +4,4 @@ hkm.patches.v_0_0.add_custom_fields_user
 hkm.patches.v_0_0.add_custom_fields_in_je_po
 hkm.patches.v_0_0.add_defaults_custom_field
 hkm.patches.v_0_0.add_custom_field_in_supplier #1
+hkm.patches.v_0_0.remove_duplicate_permission 
