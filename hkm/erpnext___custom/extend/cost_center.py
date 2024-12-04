@@ -22,7 +22,7 @@ def set_cost_center(doc, method=None):
         for dim in dimensions:
             if doc.get(dim):
                 for item in doc.items:
-                    item.set(dim, doc.get(dim))
+                    frappe.db.set_value(item.doctype, item.name, dim, doc.get(dim))
                 if doc.get("taxes"):
                     for tc in doc.taxes:
-                        tc.set(dim, doc.get(dim))
+                        frappe.db.set_value(tc.doctype, tc.name, dim, doc.get(dim))
