@@ -76,7 +76,7 @@ class AUBankAccount(Document):
                     "valueDate": "",
                     "remarks": "HKM Production",
                     "transactionRefNo": p.name,
-                    "paymentInstruction": f"SUPPLIER PAYMENT",
+                    "paymentInstruction": f"AMOUNT TRANSFERRED ",
                     "email": "",
                     "phoneNo": "",
                 }
