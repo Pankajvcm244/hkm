@@ -58,26 +58,14 @@ frappe.ui.form.on("Item Code Printer", {
                           break;
                         }
 
-                       var xOffset = 15 + (g * 20) + (g * shift);
+                        var xOffset = 15 + g * 20 + g * shift;
                         var yOffset = 20;
-                        var itemCode = total_items[j + g]["code"];
-                     
 
-                        group_string += `^FO${xOffset+2},${yOffset} ^BY 1,2,100 ^BCN,,N,N,N ^FD${itemCode}^FS`;
-                        group_string += `^FO${xOffset},${
-                          yOffset + 5 + 105
-                        }^FB200,3,5,L^A0N,30,17 ^FD${
-                        ""
-                        }\n^FS`;
-                        group_string += `^FO${xOffset},${
-                          yOffset + 5 + 108
-                        }^FB280,3,5,L^A0N,30,19 ^FD${
-                          "ITEM CODE:" + total_items[j + g]["code"]
-                        }\n^FS`;
-                        
-                        group_string += `^FO${xOffset},${
-                          yOffset + 5 + 145
-                        }^FB200,3,5,L^A0N,30,20 ^FD${"MFG:" + mfg_date}\n${"EXP:" + expiry_date}^FS`;
+
+                        group_string += getgroupString(total_items[j + g]["name"] , mfg_date, expiry_date , xOffset, yOffset);
+
+                       
+                      
 
                         item_processed++;
                       }
@@ -278,3 +266,171 @@ function addDaysToDate(date, daysToAdd) {
   return newDate;
 }
 
+
+
+
+function getgroupString(itemCode, mfg , expiry , xOffset, yOffset ,) {
+if (itemCode.length <= 22) {
+let group_string = "";
+
+
+
+
+group_string = `^FO${xOffset},${
+  yOffset + 5 + 50
+}^FB280,3,5,L^A0N,30,20 ^FD${itemCode}\n${"MFG:" + mfg}\n${
+  "EXP:" + expiry
+}^FS`;
+
+
+const fontHeight = 30; // Adjust as needed
+const fontWidth = 20; // Adjust as needed
+const lineSpacing = 40; // Adjust line spacing for better visibility
+
+group_string = `
+^FO${xOffset},${yOffset + 5 + 50}^FB280,3,${lineSpacing},L^A0N,${fontHeight},${fontWidth} 
+^FD${itemCode}^FS
+^FO${xOffset},${yOffset + 5 + 50 + 1.1 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FDMFG:${mfg}^FS
+^FO${xOffset},${yOffset + 5 + 50 + 2 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FDEXP:${expiry}^FS
+`;
+
+
+
+
+
+
+
+
+
+
+
+return group_string;
+  
+}
+if (itemCode.length > 23 && itemCode.length <= 52) {
+const [part1, part2] = divideStringIntoTwoParts(itemCode);
+
+let group_string = "";
+
+const fontHeight = 30; // Adjust as needed
+const fontWidth = 20; // Adjust as needed
+const lineSpacing = 40; // Adjust line spacing for better visibility
+
+ group_string = `
+^FO${xOffset},${yOffset + 5 + 50}^FB280,3,${lineSpacing},L^A0N,${fontHeight},${fontWidth} 
+^FD${part1}^FS
+^FO${xOffset},${yOffset + 5 + 50 + lineSpacing}^A0N,${fontHeight},${fontWidth}^FD${part2}^FS
+^FO${xOffset},${yOffset + 5 + 50 + 2 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FDMFG:${mfg}^FS
+^FO${xOffset},${yOffset + 5 + 50 + 3 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FDEXP:${expiry}^FS
+`;
+
+
+
+
+
+
+
+return group_string;
+}
+
+
+if (itemCode.length >= 53) {
+  const [part1, part2, part3] = divideStringByWordsIntoThreeParts(itemCode);
+
+
+  let group_string = "";
+
+const fontHeight = 30; // Adjust as needed
+const fontWidth = 20; // Adjust as needed
+const lineSpacing = 40; // Adjust line spacing for better visibility
+
+group_string = `
+^FO${xOffset},${yOffset + 5 + 42}^FB280,3,${lineSpacing},L^A0N,${fontHeight},${fontWidth} 
+^FD${part1}^FS
+^FO${xOffset},${yOffset + 5 + 42 + lineSpacing}^A0N,${fontHeight},${fontWidth}^FD${part2}^FS
+^FO${xOffset},${yOffset + 5 + 42 + 2 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FD${part3}^FS
+^FO${xOffset},${yOffset + 5 + 42 + 3 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FDMFG:${mfg}^FS
+^FO${xOffset},${yOffset + 5 + 42 + 4 * lineSpacing}^A0N,${fontHeight},${fontWidth}^FDEXP:${expiry}^FS
+`;
+return group_string;
+
+
+
+}
+
+
+
+
+
+
+
+
+
+
+
+}
+
+function divideStringIntoTwoParts(inputString) {
+  const midpoint = Math.floor(inputString.length / 2); // Approximate midpoint
+  let splitPoint = midpoint;
+
+  // Find the nearest space to the left of the midpoint
+  while (splitPoint > 0 && inputString[splitPoint] !== " ") {
+    splitPoint--;
+  }
+
+  // If no space is found to the left, find the nearest space to the right
+  if (splitPoint === 0) {
+    splitPoint = midpoint;
+    while (splitPoint < inputString.length && inputString[splitPoint] !== " ") {
+      splitPoint++;
+    }
+  }
+
+  const part1 = inputString.substring(0, splitPoint).trim(); // Trim to remove extra spaces
+  const part2 = inputString.substring(splitPoint).trim();
+
+  return [part1, part2];
+}
+
+function divideStringByWordsIntoThreeParts(inputString) {
+  const length = inputString.length;
+
+  // Approximate split points
+  const firstSplit = Math.floor(length / 3);
+  const secondSplit = Math.floor((2 * length) / 3);
+
+  // Adjust the first split point to the nearest space
+  let firstSplitPoint = firstSplit;
+  while (firstSplitPoint > 0 && inputString[firstSplitPoint] !== " ") {
+    firstSplitPoint--;
+  }
+
+  // Adjust the second split point to the nearest space
+  let secondSplitPoint = secondSplit;
+  while (secondSplitPoint > firstSplitPoint && inputString[secondSplitPoint] !== " ") {
+    secondSplitPoint--;
+  }
+
+  // If no space is found, search to the right
+  if (firstSplitPoint === 0) {
+    firstSplitPoint = firstSplit;
+    while (firstSplitPoint < length && inputString[firstSplitPoint] !== " ") {
+      firstSplitPoint++;
+    }
+  }
+
+  if (secondSplitPoint <= firstSplitPoint) {
+    secondSplitPoint = secondSplit;
+    while (secondSplitPoint < length && inputString[secondSplitPoint] !== " ") {
+      secondSplitPoint++;
+    }
+  }
+
+  // Extract the three parts
+  const part1 = inputString.substring(0, firstSplitPoint).trim();
+  const part2 = inputString.substring(firstSplitPoint, secondSplitPoint).trim();
+  const part3 = inputString.substring(secondSplitPoint).trim();
+
+  return [part1, part2, part3];
+}
