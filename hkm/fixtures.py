@@ -4,6 +4,9 @@
 ### This file has to be dynamically changed everytime, we need to send some customisations to other sites.
 
 custom_fixtures = [
+    "Nexus Book",
+    "Nexus Sadhana Parameter",
+    "Nexus Spiritual Level",
     # "DJ Receipt Format",
     # "Wiki Space",
     # "Wiki Page",
@@ -30,28 +33,28 @@ custom_fixtures = [
     #         ],
     #     ],
     # },
-    {
-        "dt": "Custom Field",
-        "filters": [
-            [
-                "dt",
-                "in",
-                [
-                    # "Material Request",
-                    # "Purchase Order",
-                    # "Purchase Receipt",
-                    # "Purchase Invoice",
-                    # "Sales Invoice",
-                    # "Stock Entry",
-                    # "Payment Entry",
-                    # "Journal Entry",
-                    # "Customer",
-                    # "Asset",
-                    "Supplier"
-                ],
-            ],
-        ],
-    },
+    # {
+    #     "dt": "Custom Field",
+    #     "filters": [
+    #         [
+    #             "dt",
+    #             "in",
+    #             [
+    #                 # "Material Request",
+    #                 # "Purchase Order",
+    #                 # "Purchase Receipt",
+    #                 # "Purchase Invoice",
+    #                 # "Sales Invoice",
+    #                 # "Stock Entry",
+    #                 # "Payment Entry",
+    #                 # "Journal Entry",
+    #                 # "Customer",
+    #                 # "Asset",
+    #                 "Supplier"
+    #             ],
+    #         ],
+    # ],
+    # },
     # {
     #     "dt": "Property Setter",
     #     "filters": [

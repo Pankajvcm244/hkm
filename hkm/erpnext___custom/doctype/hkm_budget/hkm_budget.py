@@ -203,6 +203,7 @@ def get_unpaid_purchase_invoices_amount(args):
                 AND tmi.is_paid = 0
                 AND (tpe.docstatus IS NULL OR tpe.docstatus = 1)
                 AND (tje.docstatus IS NULL OR tje.docstatus = 1)
+                AND tmi.name != '{args.voucher_no}'
                 AND tmi.posting_date BETWEEN '{args.yr_start_date}' AND '{args.yr_end_date}'
                 {args.dimension_condition}
             GROUP BY tmi.name) up
