@@ -33,8 +33,8 @@ class HKMBudget(Document):
         for dim in ["cost_center", "project"] + get_accounting_dimensions():
             if self.get(dim):
                 dim_set += 1
-        if dim_set != 1:
-            frappe.throw(f"Please select one Dimension. Not Less, Not More.")
+        # if dim_set != 1:
+        #     frappe.throw(f"Please select one Dimension. Not Less, Not More.")
 
 
 # args contians GL Entry Data

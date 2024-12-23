@@ -296,7 +296,7 @@ scheduler_events = {
 # auto_cancel_exempted_doctypes = ["Auto Repeat"]
 
 
-accounting_dimension_doctypes = ["Material Request", "HKM Budget"]
+accounting_dimension_doctypes = ["Material Request", "Stock Entry", "HKM Budget"]
 
 # User Data Protection
 # --------------------

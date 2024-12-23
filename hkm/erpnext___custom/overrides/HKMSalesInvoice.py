@@ -18,6 +18,8 @@ class HKMSalesInvoice(SalesInvoice):
         year = dateF.strftime("%y")
         month = dateF.strftime("%m")
         prefix = f"{company_abbr}-{year}{month}-"
+        if self.is_return:
+            prefix = "C-" + prefix
         self.name = prefix + getseries(prefix, 4)
 
     def validate_if_zero_rate_item(self):

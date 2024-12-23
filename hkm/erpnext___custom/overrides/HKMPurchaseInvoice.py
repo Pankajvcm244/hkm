@@ -25,6 +25,8 @@ class HKMPurchaseInvoice(PurchaseInvoice):
         year = dateF.strftime("%y")
         month = dateF.strftime("%m")
         prefix = f"{company_abbr}-PI-{year}{month}-"
+        if self.is_return:
+            prefix = "D-" + prefix
         self.name = prefix + getseries(prefix, 5)
 
     def validate(self):
