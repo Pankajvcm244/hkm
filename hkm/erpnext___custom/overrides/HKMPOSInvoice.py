@@ -1,4 +1,8 @@
 from __future__ import unicode_literals
+from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
+    get_accounting_dimensions,
+    get_dimensions,
+)
 import frappe, erpnext
 from frappe import _
 from frappe.utils import flt
@@ -13,8 +17,12 @@ class HKMPOSInvoice(POSInvoice):
     def __init__(self, *args, **kwargs):
         super(HKMPOSInvoice, self).__init__(*args, **kwargs)
 
+    def before_save(self):
+        return super().before_cancel()
+
     def validate(self):
         super().validate()
+        self.set_accounting_dimensions()
         self.validate_if_zero_rate_item()
         self.validate_full_amount()
         self.cummulative_stock_availbility()
@@ -24,6 +32,15 @@ class HKMPOSInvoice(POSInvoice):
         # if self.coupon_code:
         # 	from erpnext.accounts.doctype.pricing_rule.utils import validate_coupon_code
         # 	validate_coupon_code(self.coupon_code)
+
+    def set_accounting_dimensions(self):
+        dimensions = get_accounting_dimensions(as_list=True)
+        if self.pos_profile:
+            profile = frappe.get_doc("POS Profile", self.pos_profile)
+            for dimension in dimensions:
+                self.update({dimension: profile.get(dimension)})
+                for item in self.get("items"):
+                    item.update({dimension: profile.get(dimension)})
 
     def validate_full_amount(self):
         if self.paid_amount != self.rounded_total:

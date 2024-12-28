@@ -4,9 +4,6 @@
 ### This file has to be dynamically changed everytime, we need to send some customisations to other sites.
 
 custom_fixtures = [
-    "Nexus Book",
-    "Nexus Sadhana Parameter",
-    "Nexus Spiritual Level",
     # "DJ Receipt Format",
     # "Wiki Space",
     # "Wiki Page",
@@ -67,4 +64,5 @@ custom_fixtures = [
     # },
     # "Custom DocPerm",
     # "DJ Mode of Payment",
+    "Sadhana Parameter"
 ]

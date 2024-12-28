@@ -9,6 +9,8 @@
   "po_approval_section",
   "po_approval_on_whatsapp",
   "po_whatsapp_template",
+  "material_request_expiry",
+  "purchase_order_expiry",
   "voucher_flow_section",
   "pp_group",
   "item_code_section",
@@ -22,7 +24,7 @@
   {
    "fieldname": "purchase_order_tab",
    "fieldtype": "Tab Break",
-   "label": "Purchase Order Approval"
+   "label": "General"
   },
   {
    "default": "0",
@@ -44,7 +46,7 @@
   {
    "fieldname": "po_approval_section",
    "fieldtype": "Section Break",
-   "label": "PO Approval"
+   "label": "Buying"
   },
   {
    "fieldname": "voucher_flow_section",
@@ -86,12 +88,24 @@
    "fieldname": "one_time_restrictions_enabled",
    "fieldtype": "Check",
    "label": "Enabled"
+  },
+  {
+   "fieldname": "material_request_expiry",
+   "fieldtype": "Int",
+   "label": "Material Request Expiry",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "purchase_order_expiry",
+   "fieldtype": "Int",
+   "label": "Purchase Order Expiry",
+   "non_negative": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2024-10-04 14:30:56.860576",
+ "modified": "2024-12-24 11:21:36.288213",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM General Settings",

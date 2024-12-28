@@ -8,11 +8,13 @@
  "field_order": [
   "section_break_ac7y",
   "cost_head_name",
-  "lft",
-  "rgt",
-  "is_group",
   "old_parent",
-  "parent_cost_head"
+  "parent_cost_head",
+  "column_break_txxa",
+  "is_group",
+  "disabled",
+  "lft",
+  "rgt"
  ],
  "fields": [
   {
@@ -44,6 +46,7 @@
   {
    "fieldname": "old_parent",
    "fieldtype": "Link",
+   "hidden": 1,
    "label": "Old Parent",
    "options": "Cost Head"
   },
@@ -62,12 +65,22 @@
    "no_copy": 1,
    "reqd": 1,
    "unique": 1
+  },
+  {
+   "default": "0",
+   "fieldname": "disabled",
+   "fieldtype": "Check",
+   "label": "Disabled"
+  },
+  {
+   "fieldname": "column_break_txxa",
+   "fieldtype": "Column Break"
   }
  ],
  "index_web_pages_for_search": 1,
  "is_tree": 1,
  "links": [],
- "modified": "2024-12-23 10:11:13.878569",
+ "modified": "2024-12-28 12:38:42.688847",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "Cost Head",
@@ -95,6 +108,18 @@
    "report": 1,
    "role": "All",
    "share": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "Accounts Manager",
+   "share": 1,
+   "write": 1
   }
  ],
  "sort_field": "modified",

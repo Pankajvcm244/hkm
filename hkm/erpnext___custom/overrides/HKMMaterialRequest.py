@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 import frappe
 from frappe import _
 
@@ -214,3 +215,48 @@ class HKMMaterialRequest(MaterialRequest):
 # 		}
 # 	frappe.enqueue(method=frappe.sendmail, queue='short', timeout=300, is_async=True, **email_args)
 # return
+
+
+def remove_unused_mrns():
+    settings = frappe.get_cached_doc("HKM General Settings")
+    if settings.material_request_expiry:
+        past_date_str = (
+            datetime.now() - timedelta(days=settings.material_request_expiry)
+        ).strftime("%Y-%m-%d")
+        for i in frappe.get_all(
+            "Material Request",
+            filters={"creation": ["<", past_date_str], "status": "Pending"},
+            pluck="name",
+        ):
+            doc = frappe.get_doc("Material Request", i)
+            if doc.docstatus == 1:
+                try:
+                    doc.cancel()
+                except frappe.exceptions.LinkExistsError as e:
+                    print(e)
+            elif doc.docstatus == 0:
+                frappe.delete_doc("Material Request", i)
+
+
+def remove_unused_purchase_orders():
+    settings = frappe.get_cached_doc("HKM General Settings")
+    if settings.purchase_order_expiry:
+        past_date_str = (
+            datetime.now() - timedelta(days=settings.purchase_order_expiry)
+        ).strftime("%Y-%m-%d")
+        for i in frappe.get_all(
+            "Purchase Order",
+            filters={
+                "creation": ["<", past_date_str],
+                "per_billed": 0,
+                "per_received": 0,
+                "docstatus": ["!=", 2],
+            },
+            pluck="name",
+        ):
+            doc = frappe.get_doc("Purchase Order", i)
+            if doc.docstatus == 1:
+                doc.cancel()
+                frappe.db.set_value("Purchase Order", i, "workflow_state", "Cancelled")
+            elif doc.docstatus == 0:
+                frappe.delete_doc("Purchase Order", i)

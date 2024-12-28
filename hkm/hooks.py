@@ -182,6 +182,8 @@ scheduler_events = {
     "daily_long": [
         "hkm.erpnext___custom.doctype.hkm_redirect.hkm_redirect.delete_temporary_short_links",
         "hkm.firebase.doctype.app_notification.app_notification.delete_old_app_notifications",
+        "hkm.erpnext___custom.overrides.HKMMaterialRequest.remove_unused_mrns",
+        "hkm.erpnext___custom.overrides.HKMMaterialRequest.remove_unused_purchase_orders",
     ],
     "cron": {
         "15 20 * * *": ["hkm.divine_dishes.tasks.every_day_evening"],
