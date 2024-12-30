@@ -15,14 +15,16 @@ relevant_documents = [
 import frappe
 
 
-def set_cost_center(doc, method=None):
+def set_dimensions(doc, method=None):
     if doc.doctype in relevant_documents:
         dimensions = get_accounting_dimensions()
         dimensions.extend(["cost_center", "project"])
         for dim in dimensions:
             if doc.get(dim):
                 for item in doc.items:
-                    frappe.db.set_value(item.doctype, item.name, dim, doc.get(dim))
+                    if not item.get(dim):
+                        item.update({dim: doc.get(dim)})
                 if doc.get("taxes"):
                     for tc in doc.taxes:
-                        frappe.db.set_value(tc.doctype, tc.name, dim, doc.get(dim))
+                        if not tc.get(dim):
+                            tc.update({dim: doc.get(dim)})

@@ -16,7 +16,7 @@ export_python_type_annotations = True
 
 # include js, css files in header of desk.html
 app_include_css = "hkmj-theme.bundle.css"
-app_include_js = "shortcuts.bundle.js"
+app_include_js = "hkm_app.bundle.js"
 
 # include js, css files in header of web template
 # web_include_css = "hkmj-web.bundle.css"
@@ -140,6 +140,8 @@ override_doctype_class = {
 doc_events = {
     "*": {
         "before_cancel": "hkm.erpnext___custom.doctype.freeze_transaction_settings.freeze_transaction_settings.validate_transaction_against_frozen_date",
+        "before_save": "hkm.erpnext___custom.extend.cost_center.set_dimensions",
+        "before_update_after_submit": "hkm.erpnext___custom.extend.cost_center.set_dimensions",
         "on_update": "hkm.hooks_extend.on_update",
     },
     "Task": {"on_update": "hkm.erpnext___custom.task_notification.query"},

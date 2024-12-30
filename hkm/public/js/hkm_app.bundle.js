@@ -1,3 +1,5 @@
+import "./dimensions";
+
 frappe.ui.keys.add_shortcut({
   description: "Show Balance Sheet",
   shortcut: "alt+b",

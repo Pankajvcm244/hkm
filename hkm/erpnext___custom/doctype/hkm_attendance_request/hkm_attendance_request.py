@@ -2,8 +2,8 @@
 # For license information, please see license.txt
 
 # import frappe
-from datetime import date, timedelta
-import datetime
+from datetime import datetime, timedelta, date
+
 import time
 from frappe.model.document import Document
 from frappe.utils import getdate
@@ -26,12 +26,16 @@ class HKMAttendanceRequest(Document):
 	# end: auto-generated types
 	
 	def validate(self):
+		from_date = datetime.strptime(self.leave_from_date, "%Y-%m-%d").date()
+		to_date = datetime.strptime(self.leave_upto_date, "%Y-%m-%d").date()
+		if to_date < from_date:
+			frappe.throw("Invalid date range")
 		if not check_is_valid_date(self.leave_from_date) or not check_is_valid_date(self.leave_upto_date):
 			frappe.throw("Invalid date range")
 		if self.number_of_leaves == 0 or not self.number_of_leaves:
 			frappe.throw("Number of leaves cannot be zero")
 		check_number_of_leaves(self.leave_from_date, self.leave_upto_date, self.number_of_leaves)	
-      
+		
       
     
 
