@@ -72,7 +72,7 @@ def execute(filters=None):
         data.append(
             frappe._dict(
                 budget=budget.name,
-                cost_center=budget.cost_center,
+                cost_head=budget.cost_head,
                 allowed=budget.amount,
                 payment_entries_amount=payment_entries_amount,
                 unpaid_invoices_amount=unpaid_invoices_amount,
@@ -96,10 +96,10 @@ def get_columns(filters):
             "width": 200,
         },
         {
-            "label": "Cost Center",
-            "fieldname": "cost_center",
+            "label": "Cost Head",
+            "fieldname": "cost_head",
             "fieldtype": "Link",
-            "options": "Cost Center",
+            "options": "Cost Head",
             "width": 200,
         },
         {

@@ -110,7 +110,8 @@ class HKMMaterialRequest(MaterialRequest):
 
     def on_cancel(self):
         super().on_cancel()
-        self.notify_on_cancellation()
+        # TODO: This needs to be relooked after major refactoring of OLD MRNs
+        # self.notify_on_cancellation()
 
     def notify_on_cancellation(self):
         material_purchase_link = self.material_purchase_link

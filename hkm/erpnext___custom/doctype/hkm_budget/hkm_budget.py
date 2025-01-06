@@ -2,6 +2,7 @@
 # For license information, please see license.txt
 
 # import frappe
+from erpnext.accounts.doctype import accounting_dimension
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
 )
@@ -40,6 +41,9 @@ class HKMBudget(Document):
 # args contians GL Entry Data
 def validate_expense_against_budget(args):
     args = frappe._dict(args)
+    if not args.get("debit") or args.get("is_cancelled"):
+        return
+
     if not frappe.get_all("HKM Budget", limit=1):
         return
 
@@ -57,41 +61,73 @@ def validate_expense_against_budget(args):
         },
     ]
 
-    for dimension in default_dimensions + get_accounting_dimensions(as_list=False):
-        budget_against = dimension.get("fieldname")
+    accounting_dimensions = default_dimensions + get_accounting_dimensions(
+        as_list=False
+    )
 
-        if args.get(budget_against):
-            doctype = dimension.get("document_type")
+    abbr = frappe.get_cached_value("Company", args.company, "abbr")
 
-            if frappe.get_cached_value("DocType", doctype, "is_tree"):
-                lft, rgt = frappe.get_cached_value(
-                    doctype, args.get(budget_against), ["lft", "rgt"]
-                )
-                condition = f""" and exists(select name from `tab{doctype}`
-                    where lft<={lft} and rgt>={rgt} and name = budget.{budget_against})"""  # nosec
-                args.is_tree = True
-            else:
-                condition = f" and budget.{budget_against}={frappe.db.escape(args.get(budget_against))}"
-                args.is_tree = False
+    args.accounting_dimensions = []
+    for d in accounting_dimensions:
+        fieldname = d.get("fieldname")
+        if args.get(fieldname):
+            if fieldname == "cost_center" and args.get(fieldname) == f"Main - {abbr}":
+                continue
 
-            args.budget_against_field = budget_against
-            args.budget_against_doctype = doctype
-            budget_records = frappe.db.sql(
-                f"""
-                SELECT
-                    name, amount, fiscal_year
-                FROM
-                    `tabHKM Budget` budget
-                WHERE
-                    fiscal_year= '{args.fiscal_year}'
-                    and docstatus=1
-                    {condition}
-            """,
-                as_dict=True,
+            dimension = frappe._dict(
+                {
+                    "fieldname": fieldname,
+                    "document_type": d.get("document_type"),
+                    "is_tree": False,
+                }
             )
+            if frappe.get_cached_value("DocType", d.get("document_type"), "is_tree"):
+                dimension.is_tree = True
 
-            if budget_records:
-                validate_budget_records(args, budget_records)
+            args.accounting_dimensions.append(dimension)
+
+    condition = ""
+
+    for dimension in args.accounting_dimensions:
+        if dimension.is_tree:
+            lft, rgt = frappe.get_cached_value(
+                dimension.document_type, args.get(dimension.fieldname), ["lft", "rgt"]
+            )
+            ## Getting parent budget of a child
+            condition += f""" and exists(select name from `tab{dimension.document_type}`
+                    where lft<={lft} and rgt>={rgt} and name = budget.{dimension.fieldname})"""
+        else:
+            condition += f" and budget.{dimension.fieldname}={frappe.db.escape(args.get(dimension.fieldname))}"
+
+    budget_records = frappe.db.sql(
+        f"""
+        SELECT
+            name, amount, fiscal_year
+        FROM
+            `tabHKM Budget` budget
+        WHERE
+            fiscal_year= '{args.fiscal_year}'
+            and docstatus=1
+            {condition}
+    """,
+        as_dict=True,
+    )
+    # frappe.errprint(
+    #     f"""
+    #     SELECT
+    #         name, amount, fiscal_year
+    #     FROM
+    #         `tabHKM Budget` budget
+    #     WHERE
+    #         fiscal_year= '{args.fiscal_year}'
+    #         and docstatus=1
+    #         {condition}
+    # """
+    # )
+    # frappe.errprint(f"ARGS 3 : Lentht : {len(budget_records)}")
+
+    if budget_records:
+        validate_budget_records(args, budget_records)
     return
 
 
@@ -109,6 +145,14 @@ def validate_budget_records(args, budget_records):
             payment_entries_amount = get_payment_entries_amount(args)
 
             additional_expenses = get_additional_expenses_amount(args)
+            # frappe.errprint(
+            #     f"""
+            #     additional_expenses : {additional_expenses}
+            #     unpaid_invoices_amount : {unpaid_invoices_amount}
+            #     unpaid_and_uninvoiced_po_amt : {unpaid_and_uninvoiced_po_amt}
+            #     payment_entries_amount : {payment_entries_amount}
+            #     """
+            # )
 
             used_value = (
                 unpaid_invoices_amount
@@ -116,7 +160,18 @@ def validate_budget_records(args, budget_records):
                 + payment_entries_amount
                 + additional_expenses
             )
+            # frappe.errprint(
+            #     f"""
+            #     used_value : {used_value}
+            #     """
+            # )
+            # frappe.errprint(f"ARGS : {args}")
             requested_value = args.get("debit")
+            # frappe.errprint(
+            #     f"""
+            #     requested_value : {requested_value}
+            #     """
+            # )
             if budget.amount <= (used_value + requested_value):
                 link = frappe.utils.get_link_to_form("HKM Budget", budget.name)
                 frappe.throw(
@@ -136,6 +191,13 @@ def validate_budget_records(args, budget_records):
 
 
 def get_payment_entries_amount(args):
+    # frappe.errprint(
+    #     f"""
+    #     select SUM(paid_amount)
+    #     from `tabPayment Entry` tmi
+    #     where docstatus=1 {args.dimension_condition}
+    # """
+    # )
     return flt(
         frappe.db.sql(
             f"""
@@ -143,39 +205,42 @@ def get_payment_entries_amount(args):
         from `tabPayment Entry` tmi
         where docstatus=1 {args.dimension_condition}
     """,
-            (args),
         )[0][0]
     )
 
 
 def get_dimension_condition(args):
-    budget_against_field = args.get("budget_against_field")
-    condition = ""
-    if args.is_tree:
-        lft, rgt = frappe.db.get_value(
-            args.budget_against_doctype, args.get(budget_against_field), ["lft", "rgt"]
-        )
 
-        ## tmi stands for table Main Transaction
-        condition += f""" 
-        AND EXISTS(
-            SELECT name
-            FROM `tab{args.budget_against_doctype}`
-            WHERE 
-                lft>={lft} 
-                AND rgt<={rgt}
-                AND name= tmi.{budget_against_field}
-            )"""
-    else:
-        budget_against_val = args.get(budget_against_field)
-        condition += f""" 
-        AND EXISTS(
-            SELECT name 
-            FROM `tab{args.budget_against_doctype}`
-            WHERE 
-                name=tmi.{budget_against_field} 
-                AND tmi.{budget_against_field} = '{budget_against_val}'
-            )"""
+    condition = ""
+
+    for dimension in args.accounting_dimensions:
+        fieldname = dimension.get("fieldname")
+
+        if args.get(fieldname):
+
+            if frappe.get_cached_value(
+                "DocType", dimension.get("document_type"), "is_tree"
+            ):
+                lft, rgt = frappe.db.get_value(
+                    dimension.get("document_type"), args.get(fieldname), ["lft", "rgt"]
+                )
+
+                ## tmi stands for table Main Transaction
+                condition += f""" 
+                AND EXISTS(
+                    SELECT name
+                    FROM `tab{dimension.get("document_type")}`
+                    WHERE 
+                        lft>={lft} 
+                        AND rgt<={rgt}
+                        AND name= tmi.{fieldname}
+                    )"""
+
+            else:
+                budget_against_val = args.get(fieldname)
+                condition += f""" 
+                        AND tmi.{fieldname} = '{budget_against_val}'"""
+
     return condition
 
 
