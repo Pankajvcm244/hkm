@@ -192,6 +192,7 @@ scheduler_events = {
         "45 * * * *": [
             "hkm.hkm_integration.doctype.au_bank_account.au_bank_account.auto_update_bank_txs"
         ],
+        "0 0 * * *" : "hkm.tasks.mrn_close",
     },
 }
 

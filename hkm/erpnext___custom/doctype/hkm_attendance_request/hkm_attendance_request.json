@@ -1,0 +1,99 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2025-01-03 15:20:34.407936",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "employee",
+  "leave_type",
+  "section_break_nqna",
+  "leave_balance",
+  "section_break_nybe",
+  "leave_from_date",
+  "column_break_qiie",
+  "leave_upto_date",
+  "section_break_agkk",
+  "number_of_leaves"
+ ],
+ "fields": [
+  {
+   "fieldname": "employee",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Employee",
+   "options": "Employee",
+   "reqd": 1
+  },
+  {
+   "fieldname": "leave_type",
+   "fieldtype": "Select",
+   "label": "Leave Type",
+   "options": "EL\nCL\nCoff",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_nybe",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "leave_from_date",
+   "fieldtype": "Date",
+   "label": "Leave From Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "leave_upto_date",
+   "fieldtype": "Date",
+   "label": "Leave Upto Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_qiie",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_agkk",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "number_of_leaves",
+   "fieldtype": "Float",
+   "label": "Number of Leaves",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_nqna",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "leave_balance",
+   "fieldtype": "HTML",
+   "label": "Leave Balance"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2025-01-03 16:41:39.167009",
+ "modified_by": "Administrator",
+ "module": "ERPNext - Custom",
+ "name": "HKM Attendance Request",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
