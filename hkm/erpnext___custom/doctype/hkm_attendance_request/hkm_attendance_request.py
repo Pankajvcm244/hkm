@@ -19,9 +19,10 @@ class HKMAttendanceRequest(Document):
     if TYPE_CHECKING:
         from frappe.types import DF
 
+        amended_from: DF.Link | None
         employee: DF.Link
         leave_from_date: DF.Date
-        leave_type: DF.Literal["EL", "CL", "Coff"]
+        leave_type: DF.Literal["LEAVE", "Co Earn", "OD"]
         leave_upto_date: DF.Date
         number_of_leaves: DF.Float
     # end: auto-generated types
@@ -39,15 +40,21 @@ class HKMAttendanceRequest(Document):
         leave_upto_date: DF.Date
         number_of_leaves: DF.Float
 
+    def before_cancel(self):
+        check_date_range_validity(self.leave_from_date, self.leave_upto_date)
+    
+
     def validate(self):
+        check_date_range_validity(self.leave_from_date, self.leave_upto_date)
         if not self.leave_from_date < self.leave_upto_date:
-            frappe.throw("Invalid date range")
+            frappe.throw("From date should be less than Upto date")
         if not check_is_valid_date(self.leave_from_date) or not check_is_valid_date(
             self.leave_upto_date
         ):
             frappe.throw("Invalid date range")
         
         check_duplicate_leave_applications(
+            self.name,
             self.employee, self.leave_from_date, self.leave_upto_date
         )
     
@@ -57,8 +64,14 @@ class HKMAttendanceRequest(Document):
             self.leave_from_date, self.leave_upto_date, self.number_of_leaves
         )
 
-
-def check_duplicate_leave_applications(employee, leave_from_date, leave_upto_date):
+def check_date_range_validity(leave_from_date, leave_upto_date):
+    operations_doc = frappe.get_single("HKM HR Settings")
+    if not operations_doc.cut_off_date:
+        return
+    freezed_date = operations_doc.cut_off_date
+    if leave_from_date <=freezed_date or leave_upto_date <=freezed_date:
+        frappe.throw("operation on this date is not allowed")
+def check_duplicate_leave_applications(name, employee, leave_from_date, leave_upto_date):
     from_date = datetime.strptime(leave_from_date, "%Y-%m-%d")
     upto_date = datetime.strptime(leave_upto_date, "%Y-%m-%d")
     query = frappe.db.sql(
@@ -66,6 +79,7 @@ def check_duplicate_leave_applications(employee, leave_from_date, leave_upto_dat
     SELECT employee , leave_from_date, leave_upto_date
     FROM `tabHKM Attendance Request`
     WHERE employee = '{employee}'
+    AND name != '{name}'
     AND (
         -- Condition 1: New range starts within an existing range
         (leave_from_date <= '{from_date}' AND leave_upto_date >= '{from_date}')
@@ -84,9 +98,10 @@ def check_duplicate_leave_applications(employee, leave_from_date, leave_upto_dat
     )
     """,
     as_dict=1,
-)
-    if query:
-        frappe.throw("Duplicate leave application: The requested dates overlap with an existing leave application.")
+)   
+    for i in query:
+        if i.employee:
+            frappe.throw(f"Duplicate leave application: The requested dates overlap with an existing leave application.")
 
 
 

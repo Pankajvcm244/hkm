@@ -44,6 +44,9 @@ def validate_expense_against_budget(args):
     if not args.get("debit") or args.get("is_cancelled"):
         return
 
+    if not frappe.get_value("Account", args.get("account"), "root_type") == "Expense":
+        return
+
     if not frappe.get_all("HKM Budget", limit=1):
         return
 

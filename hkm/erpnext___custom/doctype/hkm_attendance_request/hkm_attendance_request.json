@@ -14,7 +14,8 @@
   "column_break_qiie",
   "leave_upto_date",
   "section_break_agkk",
-  "number_of_leaves"
+  "number_of_leaves",
+  "amended_from"
  ],
  "fields": [
   {
@@ -29,7 +30,7 @@
    "fieldname": "leave_type",
    "fieldtype": "Select",
    "label": "Leave Type",
-   "options": "EL\nCL\nCoff",
+   "options": "LEAVE\nCo Earn\nOD",
    "reqd": 1
   },
   {
@@ -70,11 +71,22 @@
    "fieldname": "leave_balance",
    "fieldtype": "HTML",
    "label": "Leave Balance"
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "HKM Attendance Request",
+   "print_hide": 1,
+   "read_only": 1,
+   "search_index": 1
   }
  ],
  "index_web_pages_for_search": 1,
+ "is_submittable": 1,
  "links": [],
- "modified": "2025-01-03 16:41:39.167009",
+ "modified": "2025-01-07 13:06:26.563492",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM Attendance Request",
@@ -89,6 +101,28 @@
    "read": 1,
    "report": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "HR Leave Request",
    "share": 1,
    "write": 1
   }

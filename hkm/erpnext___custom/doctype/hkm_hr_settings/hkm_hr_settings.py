@@ -14,6 +14,7 @@ class HKMHRSettings(Document):
 	if TYPE_CHECKING:
 		from frappe.types import DF
 
+		cut_off_date: DF.Date | None
 		google_sheets_link: DF.Data | None
 		month: DF.Literal["", "January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
 	# end: auto-generated types

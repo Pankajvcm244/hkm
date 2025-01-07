@@ -16,7 +16,7 @@ def process():
            "EL Opening Balance",
            "CL Opening Balance",
            "Coff Opening Balance",
-           "Month"  
+           "Month" ,
         ]
         == headers
     ):
@@ -24,20 +24,23 @@ def process():
     month = rows[1][4]  
     if not month:
         frappe.throw("Please put the month in the sheet.")
+ 
     operations_doc.month = month
     operations_doc.save(ignore_permissions=True)      
-    
-    frappe.db.sql(
-        f"""
-        DELETE FROM `tabHKM Leaves`'
-        """
-    )
-    frappe.db.commit()
+    doc_count = frappe.db.count("HKM Leaves")
+    if doc_count > 0:
+        frappe.db.sql("""
+            DELETE FROM `tabHKM Leaves`
+        """)
+        frappe.db.commit()
     for raw in rows[1:]:
+        if not raw[0]:
+            break
         create_hkm_leave_entries(raw)
-        
+    frappe.db.commit()
 
-def create_hkm_leave_entries(raw):        
+def create_hkm_leave_entries(raw):
+    frappe.errprint(raw) 
     employee_id = raw[0]
     if not employee_id:
         return

@@ -22,6 +22,7 @@ frappe.ui.form.on("HKM Attendance Request", {
                 frm.set_df_property("leave_balance", "options", `
                     <div style="text-align: center;">
                         <h5>
+                            ${r.message.month} 
                             EL: ${r.message.el_opening_balance} 
                             CL: ${r.message.cl_opening_balance} 
                             COFF: ${r.message.coff_opening_balance}

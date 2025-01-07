@@ -7,7 +7,8 @@
  "field_order": [
   "google_sheets_link",
   "process",
-  "month"
+  "month",
+  "cut_off_date"
  ],
  "fields": [
   {
@@ -25,12 +26,17 @@
    "fieldname": "process",
    "fieldtype": "Button",
    "label": "Process"
+  },
+  {
+   "fieldname": "cut_off_date",
+   "fieldtype": "Date",
+   "label": "Cut Off Date"
   }
  ],
  "index_web_pages_for_search": 1,
  "issingle": 1,
  "links": [],
- "modified": "2025-01-03 17:28:58.367350",
+ "modified": "2025-01-06 12:36:19.489110",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM HR Settings",
@@ -43,6 +49,16 @@
    "print": 1,
    "read": 1,
    "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "HR Manager",
    "share": 1,
    "write": 1
   }
