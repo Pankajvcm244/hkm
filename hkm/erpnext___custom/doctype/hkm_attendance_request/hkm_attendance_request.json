@@ -1,11 +1,14 @@
 {
  "actions": [],
  "allow_rename": 1,
+ "autoname": "format:att-{####}",
  "creation": "2025-01-03 15:20:34.407936",
  "doctype": "DocType",
  "engine": "InnoDB",
  "field_order": [
+  "department",
   "employee",
+  "employee_name",
   "leave_type",
   "section_break_nqna",
   "leave_balance",
@@ -81,18 +84,34 @@
    "print_hide": 1,
    "read_only": 1,
    "search_index": 1
+  },
+  {
+   "fetch_from": "employee.employee_name",
+   "fieldname": "employee_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "department",
+   "fieldtype": "Link",
+   "label": "Department",
+   "options": "Department",
+   "reqd": 1
   }
  ],
  "index_web_pages_for_search": 1,
  "is_submittable": 1,
  "links": [],
- "modified": "2025-01-07 13:06:26.563492",
+ "modified": "2025-01-08 11:22:03.798868",
  "modified_by": "Administrator",
  "module": "ERPNext - Custom",
  "name": "HKM Attendance Request",
+ "naming_rule": "Expression",
  "owner": "Administrator",
  "permissions": [
   {
+   "cancel": 1,
    "create": 1,
    "delete": 1,
    "email": 1,
@@ -102,9 +121,11 @@
    "report": 1,
    "role": "System Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
    "email": 1,
    "export": 1,
@@ -113,9 +134,11 @@
    "report": 1,
    "role": "HR Manager",
    "share": 1,
+   "submit": 1,
    "write": 1
   },
   {
+   "cancel": 1,
    "create": 1,
    "email": 1,
    "export": 1,
@@ -124,6 +147,7 @@
    "report": 1,
    "role": "HR Leave Request",
    "share": 1,
+   "submit": 1,
    "write": 1
   }
  ],

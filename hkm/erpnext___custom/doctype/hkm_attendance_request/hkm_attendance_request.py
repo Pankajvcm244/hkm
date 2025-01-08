@@ -20,7 +20,9 @@ class HKMAttendanceRequest(Document):
         from frappe.types import DF
 
         amended_from: DF.Link | None
+        department: DF.Link
         employee: DF.Link
+        employee_name: DF.Data | None
         leave_from_date: DF.Date
         leave_type: DF.Literal["LEAVE", "Co Earn", "OD"]
         leave_upto_date: DF.Date
@@ -45,8 +47,10 @@ class HKMAttendanceRequest(Document):
     
 
     def validate(self):
+        check_department(self.employee , self.department)
         check_date_range_validity(self.leave_from_date, self.leave_upto_date)
-        if not self.leave_from_date < self.leave_upto_date:
+        
+        if self.leave_from_date != self.leave_upto_date and not self.leave_from_date < self.leave_upto_date:
             frappe.throw("From date should be less than Upto date")
         if not check_is_valid_date(self.leave_from_date) or not check_is_valid_date(
             self.leave_upto_date
@@ -64,6 +68,10 @@ class HKMAttendanceRequest(Document):
             self.leave_from_date, self.leave_upto_date, self.number_of_leaves
         )
 
+def check_department(employee ,  department):
+    if frappe.db.get_value("Employee", employee , "department") != department:
+        frappe.throw("Employee and department should be same")
+    
 def check_date_range_validity(leave_from_date, leave_upto_date):
     operations_doc = frappe.get_single("HKM HR Settings")
     if not operations_doc.cut_off_date:
@@ -80,6 +88,7 @@ def check_duplicate_leave_applications(name, employee, leave_from_date, leave_up
     FROM `tabHKM Attendance Request`
     WHERE employee = '{employee}'
     AND name != '{name}'
+    AND docstatus = 1
     AND (
         -- Condition 1: New range starts within an existing range
         (leave_from_date <= '{from_date}' AND leave_upto_date >= '{from_date}')

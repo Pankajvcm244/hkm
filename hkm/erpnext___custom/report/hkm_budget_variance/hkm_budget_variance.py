@@ -10,6 +10,7 @@ from hkm.erpnext___custom.doctype.hkm_budget.hkm_budget import (
     get_payment_entries_amount,
     get_unpaid_and_uninvoiced_purchase_orders_amount,
     get_unpaid_purchase_invoices_amount,
+    prepare_dimensions,
 )
 from erpnext.accounts.doctype.accounting_dimension.accounting_dimension import (
     get_accounting_dimensions,
@@ -18,8 +19,6 @@ import frappe
 
 
 def execute(filters=None):
-    columns = get_columns(filters)
-
     data = []
 
     for budget in frappe.get_all(
@@ -38,8 +37,8 @@ def execute(filters=None):
                 "document_type": "Cost Center",
             },
         ]
-
-        for dimension in default_dimensions + get_accounting_dimensions(as_list=False):
+        prepare_dimensions(args)
+        for dimension in args.accounting_dimensions:
             if budget.get(dimension.get("fieldname")):
                 args.budget_against_field = dimension.get("fieldname")
                 args.budget_against_doctype = dimension.get("document_type")
@@ -82,7 +81,7 @@ def execute(filters=None):
                 variance=budget.amount - used,
             )
         )
-
+    columns = get_columns(filters)
     return columns, data
 
 

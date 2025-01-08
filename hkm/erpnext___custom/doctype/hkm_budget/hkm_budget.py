@@ -53,6 +53,43 @@ def validate_expense_against_budget(args):
     if not frappe.get_cached_value("HKM Budget", {"fiscal_year": args.fiscal_year}):
         return
 
+    prepare_dimensions(args)
+    budget_records = get_applicable_budget_records(args)
+
+    if budget_records:
+        validate_budget_records(args, budget_records)
+    return
+
+
+def get_applicable_budget_records(args):
+    condition = ""
+    for dimension in args.accounting_dimensions:
+        if dimension.is_tree:
+            lft, rgt = frappe.get_cached_value(
+                dimension.document_type, args.get(dimension.fieldname), ["lft", "rgt"]
+            )
+            ## Getting parent budget of a child
+            condition += f""" and exists(select name from `tab{dimension.document_type}`
+                    where lft<={lft} and rgt>={rgt} and name = budget.{dimension.fieldname})"""
+        else:
+            condition += f" and budget.{dimension.fieldname}={frappe.db.escape(args.get(dimension.fieldname))}"
+
+    return frappe.db.sql(
+        f"""
+        SELECT
+            name, amount, fiscal_year
+        FROM
+            `tabHKM Budget` budget
+        WHERE
+            fiscal_year= '{args.fiscal_year}'
+            and docstatus=1
+            {condition}
+    """,
+        as_dict=True,
+    )
+
+
+def prepare_dimensions(args):
     default_dimensions = [
         {
             "fieldname": "project",
@@ -88,50 +125,6 @@ def validate_expense_against_budget(args):
                 dimension.is_tree = True
 
             args.accounting_dimensions.append(dimension)
-
-    condition = ""
-
-    for dimension in args.accounting_dimensions:
-        if dimension.is_tree:
-            lft, rgt = frappe.get_cached_value(
-                dimension.document_type, args.get(dimension.fieldname), ["lft", "rgt"]
-            )
-            ## Getting parent budget of a child
-            condition += f""" and exists(select name from `tab{dimension.document_type}`
-                    where lft<={lft} and rgt>={rgt} and name = budget.{dimension.fieldname})"""
-        else:
-            condition += f" and budget.{dimension.fieldname}={frappe.db.escape(args.get(dimension.fieldname))}"
-
-    budget_records = frappe.db.sql(
-        f"""
-        SELECT
-            name, amount, fiscal_year
-        FROM
-            `tabHKM Budget` budget
-        WHERE
-            fiscal_year= '{args.fiscal_year}'
-            and docstatus=1
-            {condition}
-    """,
-        as_dict=True,
-    )
-    # frappe.errprint(
-    #     f"""
-    #     SELECT
-    #         name, amount, fiscal_year
-    #     FROM
-    #         `tabHKM Budget` budget
-    #     WHERE
-    #         fiscal_year= '{args.fiscal_year}'
-    #         and docstatus=1
-    #         {condition}
-    # """
-    # )
-    # frappe.errprint(f"ARGS 3 : Lentht : {len(budget_records)}")
-
-    if budget_records:
-        validate_budget_records(args, budget_records)
-    return
 
 
 def validate_budget_records(args, budget_records):

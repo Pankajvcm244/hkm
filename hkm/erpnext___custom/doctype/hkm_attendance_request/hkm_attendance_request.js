@@ -3,8 +3,18 @@
 
 frappe.ui.form.on("HKM Attendance Request", {
 	refresh(frm) {
-
+     
 	},
+    department(frm) {
+        frm.set_query("employee", (doc) => {
+            return {
+                filters: {
+                    department: doc.department,
+                    status :"Active"
+                }
+            }
+        })
+    },
 
     employee(frm) {
         // apps/hkm/hkm/erpnext___custom/doctype/hkm_attendance_request/opening_leave_balance.py

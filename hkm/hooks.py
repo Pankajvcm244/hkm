@@ -187,12 +187,15 @@ scheduler_events = {
         "hkm.erpnext___custom.overrides.HKMMaterialRequest.remove_unused_mrns",
         "hkm.erpnext___custom.overrides.HKMMaterialRequest.remove_unused_purchase_orders",
     ],
+    "monthly": [
+        "hkm.hkm_integration.doctype.au_bank_integration.au_bank_integration.refresh_token"
+    ],
     "cron": {
         "15 20 * * *": ["hkm.divine_dishes.tasks.every_day_evening"],
         "45 * * * *": [
             "hkm.hkm_integration.doctype.au_bank_account.au_bank_account.auto_update_bank_txs"
         ],
-        "0 0 * * *" : "hkm.tasks.mrn_close",
+        "0 0 * * *": "hkm.tasks.mrn_close",
     },
 }
 
