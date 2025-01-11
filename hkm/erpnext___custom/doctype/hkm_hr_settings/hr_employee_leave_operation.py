@@ -29,9 +29,8 @@ def process():
     operations_doc.save(ignore_permissions=True)      
     doc_count = frappe.db.count("HKM Leaves")
     if doc_count > 0:
-        frappe.db.sql("""
-            DELETE FROM `tabHKM Leaves`
-        """)
+        frappe.db.commit()
+        frappe.db.sql("TRUNCATE TABLE `tabHKM Leaves`")
         frappe.db.commit()
     for raw in rows[1:]:
         if not raw[0]:

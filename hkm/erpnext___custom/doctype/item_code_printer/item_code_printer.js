@@ -30,9 +30,7 @@ frappe.ui.form.on("Item Code Printer", {
                 },
                 freeze: true,
                 callback: (r) => {
-                  console.log(r.message);
-                  var items_detailed = r.message;
-                  var total_items = [];
+                  console.log("hare" , r.message);
                   var qty = frm.doc.quantity_exp;
 
                   var mfg_date = new Date(frm.doc.manufacturing_date);
@@ -44,16 +42,15 @@ frappe.ui.form.on("Item Code Printer", {
                   mfg_date = formatDateToDMY(mfg_date);
                   expiry_date = formatDateToDMY(expiry_date);
 
-                  for (var i = 0; i < qty; i++) {
-                    total_items.push(items_detailed[0]);
-                  }
+                  
+
+                  console.log("harii " , r.message[0]["name"]);
 
                   var group_string = "^XA";
                   var item_processed = 0;
 
                   for (var j = 0; j < qty; j += 3) {
                     for (var g = 0; g < 3; g++) {
-                      if (j + g < total_items.length) {
                         if (item_processed == qty) {
                           break;
                         }
@@ -62,13 +59,13 @@ frappe.ui.form.on("Item Code Printer", {
                         var yOffset = 20;
 
 
-                        group_string += getgroupString(total_items[j + g]["name"] , mfg_date, expiry_date , xOffset, yOffset);
+                        group_string += getgroupString(r.message[0]["name"].replace(/\s+/g, ' ').trim(), mfg_date, expiry_date , xOffset, yOffset);
 
                        
                       
 
                         item_processed++;
-                      }
+                      
                     }
                     if (item_processed == qty) {
                       break;
@@ -102,7 +99,7 @@ frappe.ui.form.on("Item Code Printer", {
       __("Print Item Codes"),
       async function () {
         if (
-          frm.doc.item_code &&
+          frm.doc.item_code && 
           frm.doc.company &&
           frm.doc.price_list &&
           frm.doc.quantity
